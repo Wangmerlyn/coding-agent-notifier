@@ -34,7 +34,7 @@ Flags:
 - `--title`: Optional override for the message title.
 
 ## Hook integration
-Register the wrapper so your coding agent calls it after tasks finish. Codex example:
+Register the wrapper so your coding agent calls it after tasks finish. Example for Codex CLI:
 ```
 codex config set notify "/abs/path/to/scripts/notifier/codex_notify_wrapper.sh"
 ```

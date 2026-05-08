@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""CLI entrypoint for sending coding-agent notifications as Slack DMs."""
+"""CLI entrypoint for codex_slack_notifier Slack DM notifications."""
 
 from codex_slack_notifier.notifier import main
 

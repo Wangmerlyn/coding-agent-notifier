@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "codex-slack-notifier"
 version = "0.1.0"
-description = "Slack notifier for coding-agent hooks"
+description = "Codex Slack notifier for coding-agent hooks"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

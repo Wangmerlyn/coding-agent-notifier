@@ -416,9 +416,13 @@ def lark_main(argv: Optional[list[str]] = None) -> int:
     webhook_url = _resolve_lark_webhook_url(args)
     if not webhook_url:
         if args.webhook_url_env == "LARK_WEBHOOK_URL":
-            LOG.error("Missing Feishu/Lark webhook URL (set LARK_WEBHOOK_URL or FEISHU_WEBHOOK_URL)")
+            LOG.error(
+                "Missing Feishu/Lark webhook URL (set LARK_WEBHOOK_URL or FEISHU_WEBHOOK_URL)"
+            )
         else:
-            LOG.error("Missing Feishu/Lark webhook URL in environment variable %s", args.webhook_url_env)
+            LOG.error(
+                "Missing Feishu/Lark webhook URL in environment variable %s", args.webhook_url_env
+            )
         return 1
 
     try:

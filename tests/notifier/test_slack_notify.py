@@ -133,7 +133,9 @@ def test_send_dm_retries_on_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_lark_send_text_posts_text_payload() -> None:
     responses = [FakeResponse(json_data={"code": 0, "msg": "success"})]
     session = FakeSession(responses)
-    lark_notifier = notifier.LarkNotifier("https://example.test/open-apis/bot/v2/hook/token", session=session)
+    lark_notifier = notifier.LarkNotifier(
+        "https://example.test/open-apis/bot/v2/hook/token", session=session
+    )
 
     lark_notifier.send_text("hello from codex")
 
@@ -156,9 +158,7 @@ def test_lark_send_text_rejects_nonzero_code_response() -> None:
 
 
 def test_feishu_send_text_rejects_nonzero_status_code_response() -> None:
-    responses = [
-        FakeResponse(json_data={"StatusCode": 19001, "StatusMessage": "bad webhook"})
-    ]
+    responses = [FakeResponse(json_data={"StatusCode": 19001, "StatusMessage": "bad webhook"})]
     session = FakeSession(responses)
     lark_notifier = notifier.LarkNotifier("https://example.test/hook", session=session)
 

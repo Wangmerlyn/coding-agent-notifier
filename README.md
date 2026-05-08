@@ -3,9 +3,11 @@
 [![CodeRabbit Reviews](https://img.shields.io/coderabbit/prs/github/Wangmerlyn/vibe-coding-slack-notifier?utm_source=oss&utm_medium=github&utm_campaign=Wangmerlyn%2Fvibe-coding-slack-notifier&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)](https://coderabbit.ai)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Wangmerlyn/vibe-coding-slack-notifier)
 
-Send Codex task completion alerts straight to your Slack DMs using the Slack Web API (no webhooks).
+Send Codex task completion alerts to Slack DMs or Feishu/Lark chats.
+Slack uses the Slack Web API. Feishu/Lark uses custom bot incoming webhooks.
 
 For a detailed, step-by-step guide (setup, config, debugging, FAQs), see `docs/guide.md`.
+For Feishu/Lark custom bot setup, see `docs/notifier_lark.md`.
 
 For integrations with other coding agents (Codex CLI, Claude Code, Gemini CLI, OpenCode, Copilot CLI, Cursor), see `docs/integrations.md`.
 Sample config snippets live under `docs/examples/` (Codex/Claude/Gemini/OpenCode/Copilot wrapper).
@@ -16,7 +18,7 @@ For OpenCode marketplace/npm-style plugin setup, see `docs/opencode_plugin.md`.
 - CLI-based tricks (terminal bells, desktop notifications) often fail over Remote-SSH because the sound/notification doesn’t propagate, leaving remote users uninformed.
 - This project fills the gap with Slack DMs: reliable, cross-platform, and independent of where Codex runs, so you get task-completion messages without keeping VS Code in focus or on your local machine.
 
-## Quick start
+## Slack quick start
 1. **Clone & env**
    - `git clone git@github.com:Wangmerlyn/vibe-coding-slack-notifier.git`
    - `cd vibe-coding-slack-notifier`
@@ -88,6 +90,35 @@ EOF
 ```
 
 The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup and advanced options.
+
+## Feishu/Lark custom bot quick start
+1. **Create a custom bot**
+   - Add a custom bot to the Feishu/Lark chat that should receive notifications.
+   - Copy the webhook URL.
+   - Leave signature verification disabled for this first notifier version.
+   - Official docs: [Lark](https://open.larksuite.com/document/client-docs/bot-v3/add-custom-bot) / [Feishu](https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot).
+
+2. **Set environment variables**
+   ```bash
+   # Lark global endpoint
+   export LARK_WEBHOOK_URL=https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here
+
+   # Or Feishu China endpoint
+   export FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
+   ```
+   The notifier also auto-loads `.env` or a file passed via `--env-file`.
+
+3. **Send a manual test message**
+   ```bash
+   echo '{"status":"success","title":"Codex run","summary":"Finished"}' \
+     | python scripts/notifier/lark_notify.py
+   ```
+
+4. **Wire up Codex notify**
+   ```bash
+   codex config set notify "/abs/path/to/scripts/notifier/lark_notify.py"
+   ```
+   Feishu/Lark custom bots send to the chat where the bot is installed, not to a specific user DM.
 
 ## Payload expectations
 - The notifier builds a message from `title`, `status`, `summary`, `duration`, and `url` when present.

@@ -1,18 +1,24 @@
-# Integrating Other Coding Agents with the Slack Notifier
+# Integrating Other Coding Agents with the Slack And Feishu/Lark Notifiers
 
-Many coding-agent CLIs expose hooks or plugin points that can run shell commands on lifecycle events. Point those hooks at `scripts/notifier/codex_notify_wrapper.sh` (or `slack_notify.py` directly) to deliver Slack DMs when long tasks finish.
+Many coding-agent CLIs expose hooks or plugin points that can run shell commands on lifecycle events. Point those hooks at `scripts/notifier/codex_notify_wrapper.sh` (or `slack_notify.py` directly) to deliver Slack DMs when long tasks finish. For Feishu/Lark custom bot notifications, point hooks at `scripts/notifier/lark_notify.py`.
 
 ## General pattern
 - Ensure `SLACK_BOT_TOKEN` and `SLACK_USER_ID` are available (via `.env` or exported env vars).
+- For Feishu/Lark, ensure `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` is available.
 - Use the wrapper for robustness across stdin/file/inline payloads:
   ```
   /path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh
+  ```
+- For Feishu/Lark stdin-based hooks, use:
+  ```
+  /path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py
   ```
 - Optionally capture the payload for debugging:
   ```
   DEBUG_CODEX_PAYLOAD=/tmp/codex_payload.json
   ```
-- If your tool provides a payload file path, pass it as the first argument; if it pipes JSON, no args are needed.
+- If your tool provides a payload file path for Slack, pass it as the first wrapper argument; if it pipes JSON, no args are needed.
+- For Feishu/Lark, pass payload files with `--payload-file /path/to/payload.json`.
 
 ## Claude Code
 - Supports a hook system; add a hook on events like `Stop` / `SessionEnd`.
@@ -83,15 +89,21 @@ Many coding-agent CLIs expose hooks or plugin points that can run shell commands
   See `docs/examples/copilot_wrapper.sh` for a minimal wrapper.
 
 ## Codex CLI (reference)
-- Example `~/.codex/config.toml` with the wrapper:
+- Example `~/.codex/config.toml` with the Slack wrapper:
   ```toml
   model = "<YOUR_CODEX_MODEL_ID>"   # replace with your Codex model id
   model_reasoning_effort = "high"
   notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"]
   ```
   See `docs/examples/codex/config.toml` for a full sample. Optional flags: `DEBUG_CODEX_PAYLOAD` (capture payload) and `ENV_FILE` (alternate env path).
+- Example Feishu/Lark custom bot config when the hook pipes JSON to stdin:
+  ```toml
+  notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"]
+  ```
+  Set `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` first. See `docs/notifier_lark.md`.
 
 ## Tips
 - Keep the notify command short and use absolute paths.
 - The wrapper reads the payload from a file path passed as `$1`. If `$1` is an inline JSON string, it's also handled. If no argument is given, it reads from stdin.
+- The Feishu/Lark script accepts stdin, `--payload`, or `--payload-file`.
 - Set `LOGLEVEL=WARNING` (or use `--log-level WARNING`) when calling `slack_notify.py` directly to avoid chatty stdout/stderr in host tools.

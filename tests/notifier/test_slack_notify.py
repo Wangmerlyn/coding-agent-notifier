@@ -87,9 +87,35 @@ def test_build_message_claude_code_stop_payload_uses_claude_label() -> None:
 
 def test_build_message_claude_code_empty_payload_uses_claude_label() -> None:
     """Claude-shaped payload with no useful fields still uses the Claude label."""
-    payload = {"hook_event_name": "Stop", "stop_hook_active": True}
+    payload = {
+        "hook_event_name": "Stop",
+        "stop_hook_active": True,
+        "transcript_path": "/home/user/.claude/projects/x.jsonl",
+    }
     message = build_message(payload)
     assert message == "Claude Code task completed."
+
+
+def test_build_message_codex_stop_hook_payload_uses_codex_label() -> None:
+    """Codex hooks also include hook_event_name; that alone is not a Claude signal."""
+    payload = {
+        "hook_event_name": "Stop",
+        "cwd": "/path/to/repo",
+    }
+    message = build_message(payload)
+    assert message == "Codex task completed at repo /path/to/repo"
+
+
+def test_build_message_codex_stop_hook_transcript_uses_codex_label() -> None:
+    """Codex hooks may include Claude-compatible hook fields but use .codex transcripts."""
+    payload = {
+        "hook_event_name": "Stop",
+        "stop_hook_active": True,
+        "transcript_path": "/home/user/.codex/sessions/2026/05/08/session.jsonl",
+        "cwd": "/path/to/repo",
+    }
+    message = build_message(payload)
+    assert message == "Codex task completed at repo /path/to/repo"
 
 
 def test_send_dm_sends_open_then_message(monkeypatch: pytest.MonkeyPatch) -> None:

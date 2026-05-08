@@ -178,14 +178,14 @@ class LarkNotifier:
 def _detect_agent_label(payload: Dict[str, Any]) -> str:
     """Infer a human-readable agent label from the payload shape.
 
-    Claude Code's hook payloads carry distinctive keys (``hook_event_name``,
-    ``transcript_path``, ``stop_hook_active``) that Codex's ``notify`` payloads
-    never include, so we can route the headline without user configuration.
+    Codex's hooks and Claude Code's hooks both use Claude-compatible field names
+    such as ``hook_event_name`` and ``transcript_path``. The transcript location
+    is the stable signal: Claude Code stores hook transcripts under ``.claude``.
     """
     if not isinstance(payload, dict):
         return "Codex"
-    claude_signals = ("hook_event_name", "transcript_path", "stop_hook_active")
-    if any(key in payload for key in claude_signals):
+    transcript_path = str(payload.get("transcript_path") or "").replace("\\", "/")
+    if "/.claude/" in f"/{transcript_path.strip('/')}/":
         return "Claude Code"
     return "Codex"
 

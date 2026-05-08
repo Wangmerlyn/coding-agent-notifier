@@ -7,15 +7,15 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
 - For Feishu/Lark, ensure `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` is available to the hook command.
 - Simple setup: put those values in your user-level agent config. Avoid project-level config files and repo `.env` for real tokens.
 - Prefer the agent's native hook system. Use the Slack wrapper for robustness across stdin/file/inline payloads:
-  ```
+  ```bash
   /path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh
   ```
 - For Feishu/Lark stdin-based hooks, use:
-  ```
+  ```bash
   /path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py
   ```
 - Optionally capture the payload for debugging:
-  ```
+  ```bash
   DEBUG_CODEX_PAYLOAD=/tmp/codex_payload.json
   ```
 - If your tool provides a payload file path for Slack, pass it as the first wrapper argument; if it pipes JSON, no args are needed.

@@ -30,7 +30,7 @@ Claude Code:
 ```
 
 For manual tests:
-```
+```bash
 export SLACK_BOT_TOKEN=xoxb-123...             # required
 export SLACK_USER_ID=U12345678                 # optional if passed via --user-id
 ```

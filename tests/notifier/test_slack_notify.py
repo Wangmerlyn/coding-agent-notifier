@@ -72,6 +72,26 @@ def test_build_message_repo_only_adds_default_headline() -> None:
     assert message == "Codex task completed at repo /path/to/repo"
 
 
+def test_build_message_claude_code_stop_payload_uses_claude_label() -> None:
+    """Claude Code's Stop hook payload should not be labeled as Codex."""
+    payload = {
+        "session_id": "abc123",
+        "transcript_path": "/home/user/.claude/projects/x.jsonl",
+        "cwd": "/path/to/repo",
+        "hook_event_name": "Stop",
+        "stop_hook_active": True,
+    }
+    message = build_message(payload)
+    assert message == "Claude Code task completed at repo /path/to/repo"
+
+
+def test_build_message_claude_code_empty_payload_uses_claude_label() -> None:
+    """Claude-shaped payload with no useful fields still uses the Claude label."""
+    payload = {"hook_event_name": "Stop", "stop_hook_active": True}
+    message = build_message(payload)
+    assert message == "Claude Code task completed."
+
+
 def test_send_dm_sends_open_then_message(monkeypatch: pytest.MonkeyPatch) -> None:
     responses = [
         FakeResponse(json_data={"ok": True, "channel": {"id": "C123"}}),

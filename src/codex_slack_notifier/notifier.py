@@ -117,20 +117,36 @@ class SlackNotifier:
         self.post_message(channel_id, text)
 
 
+def _detect_agent_label(payload: Dict[str, Any]) -> str:
+    """Infer a human-readable agent label from the payload shape.
+
+    Claude Code's hook payloads carry distinctive keys (``hook_event_name``,
+    ``transcript_path``, ``stop_hook_active``) that Codex's ``notify`` payloads
+    never include, so we can route the headline without user configuration.
+    """
+    if not isinstance(payload, dict):
+        return "Codex"
+    claude_signals = ("hook_event_name", "transcript_path", "stop_hook_active")
+    if any(key in payload for key in claude_signals):
+        return "Claude Code"
+    return "Codex"
+
+
 def build_message(payload: Dict[str, Any], default_title: Optional[str] = None) -> str:
-    """Create a concise Slack message from a Codex notify payload."""
+    """Create a concise Slack message from an agent notify payload."""
     status = payload.get("status") or payload.get("state")
     title = payload.get("title") or payload.get("event") or payload.get("task") or default_title
     summary = payload.get("summary") or payload.get("message") or payload.get("details")
     duration = payload.get("duration") or payload.get("elapsed") or payload.get("time")
     url = payload.get("url") or payload.get("link") or payload.get("target")
     repo = payload.get("repo") or payload.get("cwd") or payload.get("workspace")
+    agent = _detect_agent_label(payload)
 
     lines = []
 
     # If we only have repo, return a single-line, humane message.
     if repo and not any([title, status, duration, summary, url]):
-        return f"Codex task completed at repo {repo}"
+        return f"{agent} task completed at repo {repo}"
 
     if title:
         lines.append(str(title))
@@ -146,7 +162,7 @@ def build_message(payload: Dict[str, Any], default_title: Optional[str] = None) 
         lines.append(f"Repo: {repo}")
 
     if not lines:
-        return "Codex task completed."
+        return f"{agent} task completed."
 
     return "\n".join(lines)
 

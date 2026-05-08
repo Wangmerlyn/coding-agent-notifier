@@ -130,6 +130,42 @@ def test_send_dm_retries_on_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
     assert session.posts[2]["url"].endswith("chat.postMessage")
 
 
+def test_lark_send_text_posts_text_payload() -> None:
+    responses = [FakeResponse(json_data={"code": 0, "msg": "success"})]
+    session = FakeSession(responses)
+    lark_notifier = notifier.LarkNotifier("https://example.test/open-apis/bot/v2/hook/token", session=session)
+
+    lark_notifier.send_text("hello from codex")
+
+    assert len(session.posts) == 1
+    assert session.posts[0]["url"] == "https://example.test/open-apis/bot/v2/hook/token"
+    assert session.posts[0]["headers"] == {"Content-Type": "application/json; charset=utf-8"}
+    assert session.posts[0]["json"] == {
+        "msg_type": "text",
+        "content": {"text": "hello from codex"},
+    }
+
+
+def test_lark_send_text_rejects_nonzero_code_response() -> None:
+    responses = [FakeResponse(json_data={"code": 19001, "msg": "bad webhook"})]
+    session = FakeSession(responses)
+    lark_notifier = notifier.LarkNotifier("https://example.test/hook", session=session)
+
+    with pytest.raises(SlackNotificationError, match="bad webhook"):
+        lark_notifier.send_text("hello")
+
+
+def test_feishu_send_text_rejects_nonzero_status_code_response() -> None:
+    responses = [
+        FakeResponse(json_data={"StatusCode": 19001, "StatusMessage": "bad webhook"})
+    ]
+    session = FakeSession(responses)
+    lark_notifier = notifier.LarkNotifier("https://example.test/hook", session=session)
+
+    with pytest.raises(SlackNotificationError, match="bad webhook"):
+        lark_notifier.send_text("hello")
+
+
 def test_retry_after_parses_float_and_clamps(monkeypatch: pytest.MonkeyPatch) -> None:
     sleep_calls: list[int] = []
     responses = [

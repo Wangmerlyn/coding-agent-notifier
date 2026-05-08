@@ -117,6 +117,64 @@ class SlackNotifier:
         self.post_message(channel_id, text)
 
 
+class LarkNotifier:
+    """Minimal Feishu/Lark custom bot webhook client."""
+
+    def __init__(
+        self,
+        webhook_url: str,
+        session: Optional[Session] = None,
+        timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+    ) -> None:
+        self.webhook_url = webhook_url
+        self.session = session or requests.Session()
+        self.timeout_seconds = timeout_seconds
+
+    @staticmethod
+    def _headers() -> Dict[str, str]:
+        return {"Content-Type": "application/json; charset=utf-8"}
+
+    def send_text(self, text: str) -> None:
+        payload = {"msg_type": "text", "content": {"text": text}}
+        try:
+            response = self.session.post(
+                self.webhook_url,
+                headers=self._headers(),
+                json=payload,
+                timeout=self.timeout_seconds,
+            )
+        except requests.RequestException as exc:  # pragma: no cover - requests raises rarely
+            raise SlackNotificationError(f"Request to Feishu/Lark failed: {exc}") from exc
+
+        if response.status_code >= 400:
+            raise SlackNotificationError(f"HTTP error from Feishu/Lark: {response.status_code}")
+
+        data = self._parse_json(response)
+        self._raise_for_api_error(data)
+
+    @staticmethod
+    def _parse_json(response: Response) -> Dict[str, Any]:
+        try:
+            return response.json()
+        except (json.JSONDecodeError, ValueError) as exc:
+            text = getattr(response, "text", "")
+            if not text.strip():
+                return {}
+            raise SlackNotificationError("Invalid JSON received from Feishu/Lark") from exc
+
+    @staticmethod
+    def _raise_for_api_error(data: Dict[str, Any]) -> None:
+        code = data.get("code")
+        if code not in (None, 0):
+            message = data.get("msg") or data.get("message") or "unknown_error"
+            raise SlackNotificationError(f"Feishu/Lark API error: {message}")
+
+        status_code = data.get("StatusCode")
+        if status_code not in (None, 0):
+            message = data.get("StatusMessage") or data.get("message") or "unknown_error"
+            raise SlackNotificationError(f"Feishu/Lark API error: {message}")
+
+
 def _detect_agent_label(payload: Dict[str, Any]) -> str:
     """Infer a human-readable agent label from the payload shape.
 

@@ -3,20 +3,20 @@
 [![CodeRabbit Reviews](https://img.shields.io/coderabbit/prs/github/Wangmerlyn/vibe-coding-slack-notifier?utm_source=oss&utm_medium=github&utm_campaign=Wangmerlyn%2Fvibe-coding-slack-notifier&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)](https://coderabbit.ai)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Wangmerlyn/vibe-coding-slack-notifier)
 
-Send Codex task completion alerts to Slack DMs or Feishu/Lark chats.
+Send coding-agent task completion alerts to Slack DMs or Feishu/Lark chats.
 Slack uses the Slack Web API. Feishu/Lark uses custom bot incoming webhooks.
 
 For a detailed, step-by-step guide (setup, config, debugging, FAQs), see `docs/guide.md`.
 For Feishu/Lark custom bot setup, see `docs/notifier_lark.md`.
 
-For integrations with other coding agents (Codex CLI, Claude Code, Gemini CLI, OpenCode, Copilot CLI, Cursor), see `docs/integrations.md`.
-Sample config snippets live under `docs/examples/` (Codex/Claude/Gemini/OpenCode/Copilot wrapper).
+For integrations with coding-agent hooks (Codex CLI, Claude Code, Gemini CLI, OpenCode, Copilot CLI, Cursor, and similar tools), see `docs/integrations.md`.
+Sample hook config snippets live under `docs/examples/`; the wrapper example is still available for tools without a hook event.
 For OpenCode marketplace/npm-style plugin setup, see `docs/opencode_plugin.md`.
 
 ## Why This Slack Notifier
-- Codex has a notify hook but the VS Code extension still lacks built-in completion alerts (sound/visual); community requests for audible notifications haven’t shipped, so you must watch the editor.
-- CLI-based tricks (terminal bells, desktop notifications) often fail over Remote-SSH because the sound/notification doesn’t propagate, leaving remote users uninformed.
-- This project fills the gap with Slack DMs: reliable, cross-platform, and independent of where Codex runs, so you get task-completion messages without keeping VS Code in focus or on your local machine.
+- Most coding-agent CLIs now expose hooks or plugin events, but local editor notifications still vary by tool and environment.
+- CLI-local tricks (terminal bells, desktop notifications) often fail over Remote-SSH because the sound/notification doesn’t propagate, leaving remote users uninformed.
+- This project gives those hooks a remote-safe notification target: Slack DMs or Feishu/Lark chats that work independently of where the agent runs.
 
 ## Slack quick start
 1. **Clone & env**
@@ -48,16 +48,17 @@ For OpenCode marketplace/npm-style plugin setup, see `docs/opencode_plugin.md`.
 
 4. **Send a manual test DM**
    ```bash
-   echo '{"status":"success","title":"Codex run","summary":"Finished"}' \
+   echo '{"status":"success","title":"Agent run","summary":"Finished"}' \
      | python scripts/notifier/slack_notify.py --user-id "$SLACK_USER_ID"
    ```
    - The script opens a DM via `conversations.open` and sends the message via `chat.postMessage`.
 
-5. **Wire up Codex notify**
+5. **Wire up an agent hook**
+   Codex example:
    ```bash
-   codex config set notify "/abs/path/to/scripts/notifier/slack_notify.py --user-id $SLACK_USER_ID"
+   codex config set notify "/abs/path/to/scripts/notifier/codex_notify_wrapper.sh"
    ```
-   Codex will pipe a JSON payload on completion; the notifier formats and sends it.
+   Other agents can point their completion/stop/session-idle hook at the same wrapper. If a tool passes JSON on stdin, via a payload file, or as inline JSON, the wrapper normalizes it before sending Slack.
 
 6. **Run tests (optional)**
    ```bash
@@ -110,11 +111,12 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
 
 3. **Send a manual test message**
    ```bash
-   echo '{"status":"success","title":"Codex run","summary":"Finished"}' \
+   echo '{"status":"success","title":"Agent run","summary":"Finished"}' \
      | python scripts/notifier/lark_notify.py
    ```
 
-4. **Wire up Codex notify**
+4. **Wire up an agent hook**
+   Codex example:
    ```bash
    codex config set notify "/abs/path/to/scripts/notifier/lark_notify.py --env-file /abs/path/to/.env"
    ```
@@ -122,14 +124,14 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
 
 ## Payload expectations
 - The notifier builds a message from `title`, `status`, `summary`, `duration`, and `url` when present.
-- Missing fields default to a simple “Codex task completed.” message.
+- Missing fields default to a simple message using the inferred agent label, such as `Codex task completed.` or `Claude Code task completed.`
 
 ## More details
 - `docs/notifier_slack.md` contains expanded setup notes and troubleshooting.
 - Example Codex wiring: `scripts/notifier/codex_notify_example.sh`.
 
-### Debugging Codex notify (optional)
-- Use the wrapper that can read payloads from a file argument (as Codex may supply) or stdin:
+### Debugging agent hooks (optional)
+- Use the wrapper that can read payloads from a file argument, inline JSON, or stdin:
   ```
   notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"]
   ```

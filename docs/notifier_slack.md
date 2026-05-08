@@ -1,6 +1,6 @@
-# Slack DM notifier for Codex
+# Slack DM notifier for coding-agent hooks
 
-Send Codex completion events as Slack direct messages using the Slack Web API (no webhooks required).
+Send coding-agent completion events as Slack direct messages using the Slack Web API (no webhooks required).
 
 ## Slack app setup
 - Create a Slack app (from a manifest or <https://api.slack.com/apps>). Choose a Bot token.
@@ -24,7 +24,7 @@ Tokens are read from the environment only; nothing is hard-coded. The notifier a
 The notifier lives at `scripts/notifier/slack_notify.py` and accepts JSON payloads on stdin or via flags.
 ```
 # Send a quick manual notification
-echo '{"status":"success","title":"Codex run","summary":"Finished"}' \
+echo '{"status":"success","title":"Agent run","summary":"Finished"}' \
   | python scripts/notifier/slack_notify.py --user-id U12345678
 ```
 Flags:
@@ -33,16 +33,16 @@ Flags:
 - `--payload` / `--payload-file`: Provide JSON directly or from a file.
 - `--title`: Optional override for the message title.
 
-## Codex notify integration
-Register the script so Codex calls it after tasks finish:
+## Hook integration
+Register the wrapper so your coding agent calls it after tasks finish. Example using Codex:
 ```
-codex config set notify "/abs/path/to/scripts/notifier/slack_notify.py --user-id U12345678"
+codex config set notify "/abs/path/to/scripts/notifier/codex_notify_wrapper.sh"
 ```
-Codex will pipe a JSON payload to the script; the notifier formats a concise DM (title, status, duration, summary, link when present).
+The hook can pipe JSON to stdin, pass a payload file path, or pass inline JSON. The wrapper normalizes those forms before forwarding to `slack_notify.py`; the notifier formats a concise DM (title, status, duration, summary, link when present).
 A concrete example is in `scripts/notifier/codex_notify_example.sh`.
 
 ### Optional debugging
-- If Codex supplies a payload file instead of stdin, use the wrapper:
+- If your agent supplies a payload file instead of stdin, use the wrapper:
   ```
   notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"]
   ```

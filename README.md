@@ -116,7 +116,7 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
 
 4. **Wire up Codex notify**
    ```bash
-   codex config set notify "/abs/path/to/scripts/notifier/lark_notify.py"
+   codex config set notify "/abs/path/to/scripts/notifier/lark_notify.py --env-file /abs/path/to/.env"
    ```
    Feishu/Lark custom bots send to the chat where the bot is installed, not to a specific user DM.
 

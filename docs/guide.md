@@ -56,7 +56,11 @@ Custom bots send to the chat where the bot is installed, not to a user DM.
 If your notify hook pipes JSON to stdin, configure:
 ```toml
 # ~/.codex/config.toml
-notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"]
+notify = [
+  "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py",
+  "--env-file",
+  "/path/to/vibe-coding-slack-notifier/.env"
+]
 ```
 
 For full setup and troubleshooting, see `docs/notifier_lark.md`.

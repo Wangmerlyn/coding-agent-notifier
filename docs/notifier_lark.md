@@ -67,13 +67,19 @@ If your Codex notify command pipes JSON to stdin, configure the Feishu/Lark scri
 
 ```toml
 # ~/.codex/config.toml
-notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"]
+notify = [
+  "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py",
+  "--env-file",
+  "/path/to/vibe-coding-slack-notifier/.env"
+]
 ```
 
 If your hook system passes a payload file, call:
 
 ```bash
-/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py --payload-file /path/to/payload.json
+/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py \
+  --env-file /path/to/vibe-coding-slack-notifier/.env \
+  --payload-file /path/to/payload.json
 ```
 
 The existing `scripts/notifier/codex_notify_wrapper.sh` is Slack-specific because it forwards to `slack_notify.py`.

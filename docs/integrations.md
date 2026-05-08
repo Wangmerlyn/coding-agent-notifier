@@ -11,7 +11,7 @@ Many coding-agent CLIs expose hooks or plugin points that can run shell commands
   ```
 - For Feishu/Lark stdin-based hooks, use:
   ```
-  /path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py
+  /path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py --env-file /path/to/vibe-coding-slack-notifier/.env
   ```
 - Optionally capture the payload for debugging:
   ```
@@ -98,7 +98,11 @@ Many coding-agent CLIs expose hooks or plugin points that can run shell commands
   See `docs/examples/codex/config.toml` for a full sample. Optional flags: `DEBUG_CODEX_PAYLOAD` (capture payload) and `ENV_FILE` (alternate env path).
 - Example Feishu/Lark custom bot config when the hook pipes JSON to stdin:
   ```toml
-  notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"]
+  notify = [
+    "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py",
+    "--env-file",
+    "/path/to/vibe-coding-slack-notifier/.env"
+  ]
   ```
   Set `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` first. See `docs/notifier_lark.md`.
 

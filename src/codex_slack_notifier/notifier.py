@@ -285,6 +285,44 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _parse_lark_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Send Codex notifications to a Feishu/Lark custom bot webhook."
+    )
+    parser.add_argument(
+        "--webhook-url",
+        help="Feishu/Lark custom bot webhook URL",
+    )
+    parser.add_argument(
+        "--webhook-url-env",
+        help="Environment variable that holds the Feishu/Lark webhook URL",
+        default="LARK_WEBHOOK_URL",
+    )
+    parser.add_argument(
+        "--env-file",
+        help="Path to a .env file with LARK_WEBHOOK_URL/FEISHU_WEBHOOK_URL values",
+    )
+    parser.add_argument(
+        "--payload",
+        help="Raw JSON payload string",
+    )
+    parser.add_argument(
+        "--payload-file",
+        help="Path to file containing JSON payload",
+    )
+    parser.add_argument(
+        "--title",
+        help="Override title for the Feishu/Lark message",
+    )
+    parser.add_argument(
+        "--log-level",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        default="WARNING",
+        help="Logging level (default: WARNING). INFO is noisy for Codex notify.",
+    )
+    return parser.parse_args(argv)
+
+
 def _load_env_file(env_file: str) -> None:
     """Load simple KEY=VALUE pairs (optionally prefixed with 'export ') into os.environ."""
     env_path = Path(env_file)
@@ -305,21 +343,29 @@ def _load_env_file(env_file: str) -> None:
             os.environ[key] = value
 
 
+def _load_default_env_file(env_file: Optional[str]) -> bool:
+    env_file_to_load = env_file
+    if not env_file_to_load and Path(".env").exists():
+        env_file_to_load = ".env"
+
+    if not env_file_to_load:
+        return True
+
+    try:
+        _load_env_file(env_file_to_load)
+    except SlackNotificationError as exc:
+        LOG.error("Failed to load env file %s: %s", env_file_to_load, exc)
+        return False
+    return True
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     args = _parse_args(argv)
     level = getattr(logging, args.log_level.upper(), logging.WARNING)
     logging.basicConfig(level=level, format="%(levelname)s %(message)s")
 
-    env_file_to_load = args.env_file
-    if not env_file_to_load and Path(".env").exists():
-        env_file_to_load = ".env"
-
-    if env_file_to_load:
-        try:
-            _load_env_file(env_file_to_load)
-        except SlackNotificationError as exc:
-            LOG.error("Failed to load env file %s: %s", env_file_to_load, exc)
-            return 1
+    if not _load_default_env_file(args.env_file):
+        return 1
 
     user_id = args.user_id or os.environ.get("SLACK_USER_ID")
 
@@ -342,6 +388,49 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 1
 
     LOG.info("Slack notification sent to %s", user_id)
+    return 0
+
+
+def _resolve_lark_webhook_url(args: argparse.Namespace) -> Optional[str]:
+    if args.webhook_url:
+        return args.webhook_url
+
+    webhook_url = os.environ.get(args.webhook_url_env)
+    if webhook_url:
+        return webhook_url
+
+    if args.webhook_url_env == "LARK_WEBHOOK_URL":
+        return os.environ.get("FEISHU_WEBHOOK_URL")
+
+    return None
+
+
+def lark_main(argv: Optional[list[str]] = None) -> int:
+    args = _parse_lark_args(argv)
+    level = getattr(logging, args.log_level.upper(), logging.WARNING)
+    logging.basicConfig(level=level, format="%(levelname)s %(message)s")
+
+    if not _load_default_env_file(args.env_file):
+        return 1
+
+    webhook_url = _resolve_lark_webhook_url(args)
+    if not webhook_url:
+        if args.webhook_url_env == "LARK_WEBHOOK_URL":
+            LOG.error("Missing Feishu/Lark webhook URL (set LARK_WEBHOOK_URL or FEISHU_WEBHOOK_URL)")
+        else:
+            LOG.error("Missing Feishu/Lark webhook URL in environment variable %s", args.webhook_url_env)
+        return 1
+
+    try:
+        payload = load_payload(args.payload, args.payload_file)
+        message = build_message(payload, args.title)
+        notifier = LarkNotifier(webhook_url)
+        notifier.send_text(message)
+    except SlackNotificationError as exc:
+        LOG.error("Failed to send Feishu/Lark notification: %s", exc)
+        return 1
+
+    LOG.info("Feishu/Lark notification sent")
     return 0
 
 

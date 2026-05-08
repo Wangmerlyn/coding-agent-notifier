@@ -130,6 +130,42 @@ def test_send_dm_retries_on_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
     assert session.posts[2]["url"].endswith("chat.postMessage")
 
 
+def test_lark_send_text_posts_text_payload() -> None:
+    responses = [FakeResponse(json_data={"code": 0, "msg": "success"})]
+    session = FakeSession(responses)
+    lark_notifier = notifier.LarkNotifier(
+        "https://example.test/open-apis/bot/v2/hook/token", session=session
+    )
+
+    lark_notifier.send_text("hello from codex")
+
+    assert len(session.posts) == 1
+    assert session.posts[0]["url"] == "https://example.test/open-apis/bot/v2/hook/token"
+    assert session.posts[0]["headers"] == {"Content-Type": "application/json; charset=utf-8"}
+    assert session.posts[0]["json"] == {
+        "msg_type": "text",
+        "content": {"text": "hello from codex"},
+    }
+
+
+def test_lark_send_text_rejects_nonzero_code_response() -> None:
+    responses = [FakeResponse(json_data={"code": 19001, "msg": "bad webhook"})]
+    session = FakeSession(responses)
+    lark_notifier = notifier.LarkNotifier("https://example.test/hook", session=session)
+
+    with pytest.raises(SlackNotificationError, match="bad webhook"):
+        lark_notifier.send_text("hello")
+
+
+def test_feishu_send_text_rejects_nonzero_status_code_response() -> None:
+    responses = [FakeResponse(json_data={"StatusCode": 19001, "StatusMessage": "bad webhook"})]
+    session = FakeSession(responses)
+    lark_notifier = notifier.LarkNotifier("https://example.test/hook", session=session)
+
+    with pytest.raises(SlackNotificationError, match="bad webhook"):
+        lark_notifier.send_text("hello")
+
+
 def test_retry_after_parses_float_and_clamps(monkeypatch: pytest.MonkeyPatch) -> None:
     sleep_calls: list[int] = []
     responses = [
@@ -222,3 +258,47 @@ def test_main_uses_user_id_from_env_file(tmp_path: Path, monkeypatch: pytest.Mon
 
     assert exit_code == 0
     assert sent and sent[0][0] == "U123"
+
+
+def test_lark_main_uses_webhook_from_env_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text("LARK_WEBHOOK_URL=https://example.test/lark\n", encoding="utf-8")
+    monkeypatch.delenv("LARK_WEBHOOK_URL", raising=False)
+    monkeypatch.delenv("FEISHU_WEBHOOK_URL", raising=False)
+
+    sent: list[tuple[str, str]] = []
+
+    def fake_send_text(self: notifier.LarkNotifier, message: str) -> None:
+        sent.append((self.webhook_url, message))
+
+    monkeypatch.setattr(notifier.LarkNotifier, "send_text", fake_send_text)
+
+    exit_code = notifier.lark_main(
+        ["--env-file", str(env_file), "--payload", '{"status":"ok","title":"Codex run"}']
+    )
+
+    assert exit_code == 0
+    assert sent == [("https://example.test/lark", "Codex run\nStatus: ok")]
+
+
+def test_feishu_main_falls_back_to_feishu_webhook_env(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text("FEISHU_WEBHOOK_URL=https://example.test/feishu\n", encoding="utf-8")
+    monkeypatch.delenv("LARK_WEBHOOK_URL", raising=False)
+    monkeypatch.delenv("FEISHU_WEBHOOK_URL", raising=False)
+
+    sent: list[str] = []
+
+    def fake_send_text(self: notifier.LarkNotifier, message: str) -> None:
+        sent.append(self.webhook_url)
+
+    monkeypatch.setattr(notifier.LarkNotifier, "send_text", fake_send_text)
+
+    exit_code = notifier.lark_main(["--env-file", str(env_file), "--payload", '{"status":"ok"}'])
+
+    assert exit_code == 0
+    assert sent == ["https://example.test/feishu"]

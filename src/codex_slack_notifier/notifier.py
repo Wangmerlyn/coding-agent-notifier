@@ -280,7 +280,7 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
         "--log-level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         default="WARNING",
-        help="Logging level (default: WARNING). INFO is noisy for Codex notify.",
+        help="Logging level (default: WARNING). INFO is noisy for agent hooks.",
     )
     return parser.parse_args(argv)
 
@@ -318,7 +318,7 @@ def _parse_lark_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
         "--log-level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         default="WARNING",
-        help="Logging level (default: WARNING). INFO is noisy for Codex notify.",
+        help="Logging level (default: WARNING). INFO is noisy for agent hooks.",
     )
     return parser.parse_args(argv)
 

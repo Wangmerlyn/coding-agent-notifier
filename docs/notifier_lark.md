@@ -1,6 +1,6 @@
-# Feishu/Lark custom bot notifier for Codex
+# Feishu/Lark custom bot notifier for coding-agent hooks
 
-Send Codex completion events to a Feishu/Lark chat using a custom bot incoming webhook.
+Send coding-agent completion events to a Feishu/Lark chat using a custom bot incoming webhook.
 
 Custom bots post to the chat where the bot is installed. This is not a direct-message API and does not target a specific user.
 
@@ -41,7 +41,7 @@ The notifier auto-loads `.env` in the current directory, or a file passed with `
 ## Manual smoke test
 
 ```bash
-echo '{"status":"success","title":"Codex run","summary":"Finished"}' \
+echo '{"status":"success","title":"Agent run","summary":"Finished"}' \
   | python scripts/notifier/lark_notify.py
 ```
 
@@ -49,21 +49,21 @@ To use a nonstandard env var:
 
 ```bash
 export MY_LARK_WEBHOOK=https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here
-echo '{"status":"success","title":"Codex run"}' \
+echo '{"status":"success","title":"Agent run"}' \
   | python scripts/notifier/lark_notify.py --webhook-url-env MY_LARK_WEBHOOK
 ```
 
 To pass the URL directly:
 
 ```bash
-echo '{"status":"success","title":"Codex run"}' \
+echo '{"status":"success","title":"Agent run"}' \
   | python scripts/notifier/lark_notify.py \
       --webhook-url "https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here"
 ```
 
-## Codex notify integration
+## Hook integration
 
-If your Codex notify command pipes JSON to stdin, configure the Feishu/Lark script directly:
+If your agent hook pipes JSON to stdin, configure the Feishu/Lark script directly. Codex example:
 
 ```toml
 # ~/.codex/config.toml
@@ -101,7 +101,7 @@ The notifier sends a text custom bot payload:
 {
   "msg_type": "text",
   "content": {
-    "text": "Codex run\nStatus: success\nFinished"
+    "text": "Agent run\nStatus: success\nFinished"
   }
 }
 ```

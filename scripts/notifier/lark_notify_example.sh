@@ -13,7 +13,7 @@ fi
 python /home/you/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py <<'JSON'
 {
   "status": "success",
-  "title": "Sample Codex run",
-  "summary": "Replace this payload with the one Codex supplies."
+  "title": "Sample agent run",
+  "summary": "Replace this payload with the one your agent supplies."
 }
 JSON

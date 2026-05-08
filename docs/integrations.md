@@ -1,11 +1,11 @@
-# Integrating Other Coding Agents with the Slack And Feishu/Lark Notifiers
+# Integrating Coding Agents with the Slack and Feishu/Lark Notifiers
 
-Many coding-agent CLIs expose hooks or plugin points that can run shell commands on lifecycle events. Point those hooks at `scripts/notifier/codex_notify_wrapper.sh` (or `slack_notify.py` directly) to deliver Slack DMs when long tasks finish. For Feishu/Lark custom bot notifications, point hooks at `scripts/notifier/lark_notify.py`.
+Most coding-agent CLIs now expose hooks or plugin points that can run shell commands on lifecycle events. Point the completion/stop/session-idle hook at `scripts/notifier/codex_notify_wrapper.sh` to deliver Slack DMs when long tasks finish. For Feishu/Lark custom bot notifications, point hooks at `scripts/notifier/lark_notify.py`.
 
 ## General pattern
 - Ensure `SLACK_BOT_TOKEN` and `SLACK_USER_ID` are available (via `.env` or exported env vars).
 - For Feishu/Lark, ensure `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` is available.
-- Use the wrapper for robustness across stdin/file/inline payloads:
+- Prefer the agent's native hook system. Use the Slack wrapper for robustness across stdin/file/inline payloads:
   ```
   /path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh
   ```
@@ -19,6 +19,7 @@ Many coding-agent CLIs expose hooks or plugin points that can run shell commands
   ```
 - If your tool provides a payload file path for Slack, pass it as the first wrapper argument; if it pipes JSON, no args are needed.
 - For Feishu/Lark, pass payload files with `--payload-file /path/to/payload.json`.
+- If a tool still has no hook event, wrap the agent command and invoke the notifier after the command exits. See `docs/examples/copilot_wrapper.sh` for the fallback shape.
 
 ## Claude Code
 - Supports a hook system; add a hook on events like `Stop` / `SessionEnd`.
@@ -80,13 +81,17 @@ Many coding-agent CLIs expose hooks or plugin points that can run shell commands
   `/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh`.
   See `docs/examples/opencode/slackNotifier.js`.
 
-## Copilot CLI & Cursor
-- No native hooks today. Workaround: wrap the CLI call and invoke the notifier afterward:
+## Copilot CLI, Cursor, and similar agents
+- If your installed version exposes a completion/stop hook, configure that hook to run the Slack wrapper:
+  ```bash
+  /path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh
+  ```
+- If your version does not expose a hook, wrap the CLI call and invoke the notifier afterward:
   ```bash
   copilot "$@"
   /path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh
   ```
-  See `docs/examples/copilot_wrapper.sh` for a minimal wrapper.
+  See `docs/examples/copilot_wrapper.sh` for a minimal fallback wrapper.
 
 ## Codex CLI (reference)
 - Example `~/.codex/config.toml` with the Slack wrapper:
@@ -111,3 +116,4 @@ Many coding-agent CLIs expose hooks or plugin points that can run shell commands
 - The wrapper reads the payload from a file path passed as `$1`. If `$1` is an inline JSON string, it's also handled. If no argument is given, it reads from stdin.
 - The Feishu/Lark script accepts stdin, `--payload`, or `--payload-file`.
 - Set `LOGLEVEL=WARNING` (or use `--log-level WARNING`) when calling `slack_notify.py` directly to avoid chatty stdout/stderr in host tools.
+- Agent hook APIs change faster than this repository. When a tool adds a native hook, keep the notifier command the same and only translate the tool-specific hook syntax.

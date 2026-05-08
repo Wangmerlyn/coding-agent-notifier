@@ -21,6 +21,27 @@ Official setup docs:
 
 Use either variable name. `LARK_WEBHOOK_URL` wins when both are set.
 
+For agent hooks, the simple setup is user-level agent config. Keep real webhook URLs out of project-level config and repo `.env` files.
+
+Codex:
+```toml
+# ~/.codex/config.toml
+[shell_environment_policy.set]
+LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here"
+# or:
+# FEISHU_WEBHOOK_URL = "https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here"
+```
+
+Claude Code:
+```json
+{
+  "env": {
+    "LARK_WEBHOOK_URL": "https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here"
+  }
+}
+```
+
+For manual tests:
 ```bash
 # Lark global endpoint
 export LARK_WEBHOOK_URL=https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here
@@ -29,7 +50,7 @@ export LARK_WEBHOOK_URL=https://open.larksuite.com/open-apis/bot/v2/hook/your-to
 export FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
 ```
 
-Or use `.env`:
+Repo `.env` remains supported as a local-development fallback:
 
 ```bash
 cp .env.example .env
@@ -37,6 +58,8 @@ edit .env
 ```
 
 The notifier auto-loads `.env` in the current directory, or a file passed with `--env-file`.
+
+This is a simple setup, not secure secret storage. A secure setup would use an OS keychain, credential helper, or tightly permissioned credential file loaded only by the notifier, but that is intentionally outside the default quick path.
 
 ## Manual smoke test
 
@@ -68,9 +91,7 @@ If your agent hook pipes JSON to stdin, configure the Feishu/Lark script directl
 ```toml
 # ~/.codex/config.toml
 notify = [
-  "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py",
-  "--env-file",
-  "/path/to/vibe-coding-slack-notifier/.env"
+  "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
 ]
 ```
 
@@ -78,7 +99,6 @@ If your hook system passes a payload file, call:
 
 ```bash
 /path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py \
-  --env-file /path/to/vibe-coding-slack-notifier/.env \
   --payload-file /path/to/payload.json
 ```
 

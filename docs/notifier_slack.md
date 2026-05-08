@@ -9,16 +9,34 @@ Send coding-agent completion events as Slack direct messages using the Slack Web
 - Find your Slack User ID (profile → ⋯ → Copy member ID) for the DM recipient.
 
 ## Environment variables
+For agent hooks, the simple setup is user-level agent config. Keep real values out of project-level config and repo `.env` files.
+
+Codex:
+```toml
+# ~/.codex/config.toml
+[shell_environment_policy.set]
+SLACK_BOT_TOKEN = "xoxb-123..."
+SLACK_USER_ID = "U12345678"
 ```
-# Option A: export directly
+
+Claude Code:
+```json
+{
+  "env": {
+    "SLACK_BOT_TOKEN": "xoxb-123...",
+    "SLACK_USER_ID": "U12345678"
+  }
+}
+```
+
+For manual tests:
+```
 export SLACK_BOT_TOKEN=xoxb-123...             # required
 export SLACK_USER_ID=U12345678                 # optional if passed via --user-id
-
-# Option B: use a .env file (see .env.example)
-cp .env.example .env
-set -a; source .env; set +a
 ```
-Tokens are read from the environment only; nothing is hard-coded. The notifier also auto-loads `.env` (or a file passed via `--env-file`) if present.
+Tokens are read from the environment only; nothing is hard-coded. The notifier also supports `.env` or `--env-file` as local-development fallbacks.
+
+This is a simple setup, not secure secret storage. A secure setup would use an OS keychain, credential helper, or tightly permissioned credential file loaded only by the notifier, but that is intentionally outside the default quick path.
 
 ## Script usage
 The notifier lives at `scripts/notifier/slack_notify.py` and accepts JSON payloads on stdin or via flags.
@@ -52,7 +70,7 @@ A concrete example is in `scripts/notifier/codex_notify_example.sh`.
   ```
   Unset this variable to stop logging.
 
-> The wrapper defaults to loading `.env` from the repo root; override with `ENV_FILE=/custom/path/.env` if you store credentials elsewhere.
+> The wrapper can load `.env` from the repo root as a fallback; override with `ENV_FILE=/custom/path/.env` if you use an env file.
 
 ## Installing & testing
 ```

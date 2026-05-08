@@ -33,18 +33,30 @@ For OpenCode marketplace/npm-style plugin setup, see `docs/opencode_plugin.md`.
    - Install the app to the workspace and copy the **Bot User OAuth Token** (`xoxb-...`).
    - Find your Slack User ID (Profile → ⋯ → Copy member ID).
 
-3. **Set environment variables**
-   ```bash
-   # Option A: export directly
-   export SLACK_BOT_TOKEN=xoxb-your-token-here
-   export SLACK_USER_ID=U12345678   # or pass --user-id
+3. **Configure credentials**
+   For agent hooks, the simple setup is to put notifier env vars in your user-level agent config, not in a repo `.env`.
 
-   # Option B: copy and edit .env.example, then
-   cp .env.example .env
-   # edit .env, then load it
-   set -a; source .env; set +a
+   Codex example:
+   ```toml
+   # ~/.codex/config.toml
+   [shell_environment_policy.set]
+   SLACK_BOT_TOKEN = "xoxb-your-token-here"
+   SLACK_USER_ID = "U12345678"
    ```
-   Tokens are read from the environment only. The notifier also auto-loads `.env` (or a file passed via `--env-file`) if present.
+
+   Claude Code example:
+   ```json
+   {
+     "env": {
+       "SLACK_BOT_TOKEN": "xoxb-your-token-here",
+       "SLACK_USER_ID": "U12345678"
+     }
+   }
+   ```
+
+   For manual smoke tests, direct shell export is also fine. Repo `.env` is still supported as a fallback for local development, but it is no longer the recommended hook setup.
+
+   This is a simple setup, not secure secret storage. A more secure setup would use an OS keychain, credential helper, or tightly permissioned credential file loaded only by the notifier; this project keeps the default path lightweight.
 
 4. **Send a manual test DM**
    ```bash
@@ -99,7 +111,7 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
    - Leave signature verification disabled for this first notifier version.
    - Official docs: [Lark](https://open.larksuite.com/document/client-docs/bot-v3/add-custom-bot) / [Feishu](https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot).
 
-2. **Set environment variables**
+2. **Configure the webhook**
    ```bash
    # Lark global endpoint
    export LARK_WEBHOOK_URL=https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here
@@ -107,7 +119,7 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
    # Or Feishu China endpoint
    export FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
    ```
-   The notifier also auto-loads `.env` or a file passed via `--env-file`.
+   For agent hooks, prefer the same user-level agent config pattern shown above. Repo `.env` remains a local-development fallback.
 
 3. **Send a manual test message**
    ```bash
@@ -117,8 +129,8 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
 
 4. **Wire up an agent hook**
    Codex example:
-   ```bash
-   codex config set notify "/abs/path/to/scripts/notifier/lark_notify.py --env-file /abs/path/to/.env"
+   ```toml
+   notify = ["/abs/path/to/scripts/notifier/lark_notify.py"]
    ```
    Feishu/Lark custom bots send to the chat where the bot is installed, not to a specific user DM.
 

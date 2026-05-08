@@ -1,4 +1,9 @@
 {
+  "env": {
+    "SLACK_BOT_TOKEN": "xoxb-your-token-here",
+    "SLACK_USER_ID": "U12345678",
+    "LARK_WEBHOOK_URL": "https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here"
+  },
   "hooks": {
     "Stop": [
       {

@@ -2,6 +2,13 @@ model = "<YOUR_CODEX_MODEL_ID>"
 model_reasoning_effort = "high"
 notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"]
 
+[shell_environment_policy.set]
+SLACK_BOT_TOKEN = "xoxb-your-token-here"
+SLACK_USER_ID = "U12345678"
+# For Feishu/Lark custom bot notifications, set one of:
+# LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here"
+# FEISHU_WEBHOOK_URL = "https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here"
+
 # Optional:
 # DEBUG_CODEX_PAYLOAD=/tmp/codex_payload.json   # capture payload used
-# ENV_FILE=/path/to/.env                        # custom env file path
+# ENV_FILE=/path/to/.env                        # local env-file fallback

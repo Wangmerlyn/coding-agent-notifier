@@ -142,7 +142,7 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
           "hooks": [
             {
               "type": "command",
-              "command": "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
+              "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
             }
           ]
         }
@@ -150,8 +150,8 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
     }
   }
   ```
-  Set `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` first. See `docs/examples/codex/hooks.json`, `docs/examples/codex/hooks_lark.json`, and `docs/notifier_lark.md`.
-- After editing `~/.codex/hooks.json`, Codex may require hook review. Open `/hooks`, review the command, and enable/trust it. For scripted setup, ask Codex `hooks/list` for the current hook hash and trust that exact hash; do not hand-calculate or reuse an old hash.
+  Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package. Set `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` first. See `docs/examples/codex/hooks.json`, `docs/examples/codex/hooks_lark.json`, and `docs/notifier_lark.md`.
+- After editing `~/.codex/hooks.json`, Codex may require hook review. Open `/hooks`, review the command, and enable/trust it. For scripted setup, query the Codex app-server RPC method `hooks/list`, read the hook entry's `currentHash`, and trust that exact value; do not hand-calculate or reuse an old hash.
 - Avoid using Codex top-level `notify` for new installs. If you must use it, remember that recent Codex versions append the payload as a positional argument; direct Feishu/Lark `notify` commands therefore need `--payload`.
 
 ## Tips

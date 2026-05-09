@@ -150,7 +150,7 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
            "hooks": [
              {
                "type": "command",
-               "command": "/abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
+               "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
              }
            ]
          }
@@ -158,7 +158,7 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
      }
    }
    ```
-   Keep `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` in `~/.codex/config.toml` under `[shell_environment_policy.set]`, then approve the hook from `/hooks` if Codex asks for review.
+   Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package. Keep `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` in `~/.codex/config.toml` under `[shell_environment_policy.set]`, then approve the hook from `/hooks` if Codex asks for review.
    Feishu/Lark custom bots send to the chat where the bot is installed, not to a specific user DM.
 
 ## Payload expectations

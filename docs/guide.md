@@ -106,7 +106,7 @@ Codex hook example (`~/.codex/hooks.json`):
         "hooks": [
           {
             "type": "command",
-            "command": "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
+            "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
           }
         ]
       }
@@ -115,7 +115,7 @@ Codex hook example (`~/.codex/hooks.json`):
 }
 ```
 
-Keep `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` in `~/.codex/config.toml` under `[shell_environment_policy.set]`. For full setup and troubleshooting, see `docs/notifier_lark.md`.
+Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package. Keep `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` in `~/.codex/config.toml` under `[shell_environment_policy.set]`. For full setup and troubleshooting, see `docs/notifier_lark.md`.
 
 Codex's older top-level `notify = [...]` path is different from hooks: recent Codex versions append the payload as a command argument. If you use `notify` anyway, direct Feishu/Lark commands must include `--payload`; new installs should prefer `~/.codex/hooks.json`.
 
@@ -146,7 +146,7 @@ echo '{"status":"success","title":"Test ping","summary":"Hello"}' \
 - Empty payload: notifier still sends a default message using the inferred agent label.
 - Feishu/Lark keyword security: include the configured keyword in the message title or payload.
 - Feishu/Lark signing: leave signature verification disabled; this first version does not sign custom bot requests.
-- Codex hook not running: open `/hooks` and verify the hook is enabled/trusted. If you script trust state, use Codex `hooks/list` to get the exact current hash.
+- Codex hook not running: open `/hooks` and verify the hook is enabled/trusted. If you script trust state, query the app-server RPC method `hooks/list` for `currentHash` and trust that exact value.
 - `unrecognized arguments: {"type":"agent-turn-complete",...}`: a Codex `notify` command is passing inline JSON as argv. Use `~/.codex/hooks.json`, or add `--payload` to the direct Feishu/Lark `notify` command.
 
 ## Development

@@ -96,7 +96,7 @@ Prefer your agent's native hook system. Codex uses a user-level `hooks.json` fil
         "hooks": [
           {
             "type": "command",
-            "command": "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
+            "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
           }
         ]
       }
@@ -105,7 +105,7 @@ Prefer your agent's native hook system. Codex uses a user-level `hooks.json` fil
 }
 ```
 
-Save that as `~/.codex/hooks.json`. Keep the webhook URL in `~/.codex/config.toml` under `[shell_environment_policy.set]`, then run Codex and approve the hook from `/hooks` if Codex says it needs review.
+Save that as `~/.codex/hooks.json`. Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package. Keep the webhook URL in `~/.codex/config.toml` under `[shell_environment_policy.set]`, then run Codex and approve the hook from `/hooks` if Codex says it needs review.
 See `docs/examples/codex/hooks_lark.json` for a copy/paste starter.
 
 If you use `FEISHU_WEBHOOK_URL` and want to make the env var explicit, add the flag:
@@ -113,7 +113,7 @@ If you use `FEISHU_WEBHOOK_URL` and want to make the env var explicit, add the f
 ```json
 {
   "type": "command",
-  "command": "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py --webhook-url-env FEISHU_WEBHOOK_URL"
+  "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py --webhook-url-env FEISHU_WEBHOOK_URL"
 }
 ```
 
@@ -141,7 +141,8 @@ Codex's native top-level `notify = [...]` setting is not the same as a Codex hoo
 
 ```toml
 notify = [
-  "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py",
+  "/path/to/python",
+  "/abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py",
   "--payload"
 ]
 ```
@@ -176,7 +177,7 @@ The text body is generated from the same fields as the Slack notifier: `title`, 
 
 - `Missing Feishu/Lark webhook URL`: set `LARK_WEBHOOK_URL`, `FEISHU_WEBHOOK_URL`, `--webhook-url`, or `--webhook-url-env`.
 - `unrecognized arguments: {"type":"agent-turn-complete",...}`: the Codex native `notify` command is passing inline JSON as an argv value. Use `~/.codex/hooks.json`, or add `--payload` before the payload in the `notify` command.
-- Hook does not run in Codex: open `/hooks`, review the command, and make sure it is enabled/trusted. If scripting this, read the current hook hash from `hooks/list`; do not guess the trusted hash.
+- Hook does not run in Codex: open `/hooks`, review the command, and make sure it is enabled/trusted. If scripting this, query the Codex app-server RPC method `hooks/list`, read the hook entry's `currentHash`, and trust that exact value.
 - `bad webhook` or `access token invalid`: check that the full webhook URL was copied.
 - Keyword security failures: include the custom keyword in `--title` or in the agent payload text.
 - No chat message: confirm the custom bot is installed in the expected chat and that signing is disabled.

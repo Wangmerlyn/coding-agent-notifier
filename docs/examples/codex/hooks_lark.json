@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -66,11 +66,24 @@ For OpenCode marketplace/npm-style plugin setup, see `docs/opencode_plugin.md`.
    - The script opens a DM via `conversations.open` and sends the message via `chat.postMessage`.
 
 5. **Wire up an agent hook**
-   Codex example:
-   ```bash
-   codex config set notify "/abs/path/to/scripts/notifier/codex_notify_wrapper.sh"
+   Codex hook example (`~/.codex/hooks.json`):
+   ```json
+   {
+     "hooks": {
+       "Stop": [
+         {
+           "hooks": [
+             {
+               "type": "command",
+               "command": "/abs/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"
+             }
+           ]
+         }
+       ]
+     }
+   }
    ```
-   Other agents can point their completion/stop/session-idle hook at the same wrapper. If a tool passes JSON on stdin, via a payload file, or as inline JSON, the wrapper normalizes it before sending Slack.
+   Other agents can point their completion/stop/session-idle hook at the same wrapper. If a tool passes JSON on stdin, via a payload file, or as inline JSON, the wrapper normalizes it before sending Slack. If Codex says the hook needs review, open `/hooks` and approve the command.
 
 6. **Run tests (optional)**
    ```bash
@@ -128,10 +141,24 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
    ```
 
 4. **Wire up an agent hook**
-   Codex example:
-   ```toml
-   notify = ["/abs/path/to/scripts/notifier/lark_notify.py"]
+   Codex hook example (`~/.codex/hooks.json`):
+   ```json
+   {
+     "hooks": {
+       "Stop": [
+         {
+           "hooks": [
+             {
+               "type": "command",
+               "command": "/abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
+             }
+           ]
+         }
+       ]
+     }
+   }
    ```
+   Keep `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` in `~/.codex/config.toml` under `[shell_environment_policy.set]`, then approve the hook from `/hooks` if Codex asks for review.
    Feishu/Lark custom bots send to the chat where the bot is installed, not to a specific user DM.
 
 ## Payload expectations
@@ -140,12 +167,12 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
 
 ## More details
 - `docs/notifier_slack.md` contains expanded setup notes and troubleshooting.
-- Example Codex wiring: `scripts/notifier/codex_notify_example.sh`.
+- Example Codex wiring: `docs/examples/codex/hooks.json`, `docs/examples/codex/hooks_lark.json`, and `scripts/notifier/codex_notify_example.sh`.
 
 ### Debugging agent hooks (optional)
 - Use the wrapper that can read payloads from a file argument, inline JSON, or stdin:
-  ```
-  notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"]
+  ```bash
+  /path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh
   ```
 - To capture the final payload for debugging, set an env var before running Codex:
   ```

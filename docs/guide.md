@@ -71,10 +71,24 @@ The simple setup is not secure secret storage. A secure setup would use an OS ke
 
 ## Wire an agent hook to Slack
 Use the portable wrapper so payloads from stdin, inline JSON, or a file all work:
-```toml
-# ~/.codex/config.toml
-notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"]
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
+Save this Codex example as `~/.codex/hooks.json`. If Codex says hooks need review, open `/hooks`, review the command, and enable/trust it.
+
 Options:
 - Override env file location for local `.env` fallback: `ENV_FILE=/path/to/.env`.
 - Capture the payload used: `DEBUG_CODEX_PAYLOAD=/path/to/codex_payload.json` (unset to disable).
@@ -83,15 +97,27 @@ For Claude Code, Gemini CLI, OpenCode, Copilot CLI, Cursor, and other agents, co
 
 ## Wire an agent hook to Feishu/Lark
 Custom bots send to the chat where the bot is installed, not to a user DM.
-If your notify hook pipes JSON to stdin, configure:
-```toml
-# ~/.codex/config.toml
-notify = [
-  "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
-]
+Codex hook example (`~/.codex/hooks.json`):
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
 
-For full setup and troubleshooting, see `docs/notifier_lark.md`.
+Keep `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` in `~/.codex/config.toml` under `[shell_environment_policy.set]`. For full setup and troubleshooting, see `docs/notifier_lark.md`.
+
+Codex's older top-level `notify = [...]` path is different from hooks: recent Codex versions append the payload as a command argument. If you use `notify` anyway, direct Feishu/Lark commands must include `--payload`; new installs should prefer `~/.codex/hooks.json`.
 
 ## Manual Slack send (smoke test)
 ```bash
@@ -120,6 +146,8 @@ echo '{"status":"success","title":"Test ping","summary":"Hello"}' \
 - Empty payload: notifier still sends a default message using the inferred agent label.
 - Feishu/Lark keyword security: include the configured keyword in the message title or payload.
 - Feishu/Lark signing: leave signature verification disabled; this first version does not sign custom bot requests.
+- Codex hook not running: open `/hooks` and verify the hook is enabled/trusted. If you script trust state, use Codex `hooks/list` to get the exact current hash.
+- `unrecognized arguments: {"type":"agent-turn-complete",...}`: a Codex `notify` command is passing inline JSON as argv. Use `~/.codex/hooks.json`, or add `--payload` to the direct Feishu/Lark `notify` command.
 
 ## Development
 - Format/lint: `pre-commit run --all-files` (uses ruff).
@@ -131,6 +159,8 @@ echo '{"status":"success","title":"Test ping","summary":"Hello"}' \
 - `docs/guide.md` – this detailed guide.
 - `docs/notifier_slack.md` – focused setup notes for Slack + coding-agent hooks.
 - `docs/notifier_lark.md` – focused setup notes for Feishu/Lark custom bots.
+- `docs/examples/codex/hooks.json` – Codex Stop hook example for Slack.
+- `docs/examples/codex/hooks_lark.json` – Codex Stop hook example for Feishu/Lark.
 - `scripts/notifier/codex_notify_wrapper.sh` – Slack hook entrypoint for common agent payload styles.
 - `scripts/notifier/slack_notify.py` – CLI entry to the notifier logic.
 - `scripts/notifier/lark_notify.py` – CLI entry for Feishu/Lark custom bot webhooks.

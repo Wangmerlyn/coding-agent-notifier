@@ -53,16 +53,31 @@ Flags:
 
 ## Hook integration
 Register the wrapper so your coding agent calls it after tasks finish. Example using Codex:
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/abs/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
-codex config set notify "/abs/path/to/scripts/notifier/codex_notify_wrapper.sh"
-```
+Save that as `~/.codex/hooks.json`. If Codex says the hook needs review, open `/hooks`, review the command, and enable/trust it.
+
 The hook can pipe JSON to stdin, pass a payload file path, or pass inline JSON. The wrapper normalizes those forms before forwarding to `slack_notify.py`; the notifier formats a concise DM (title, status, duration, summary, link when present).
 A concrete example is in `scripts/notifier/codex_notify_example.sh`.
 
 ### Optional debugging
 - If your agent supplies a payload file instead of stdin, use the wrapper:
-  ```
-  notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"]
+  ```bash
+  /path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh /path/to/payload.json
   ```
 - To capture the selected payload for inspection, set:
   ```

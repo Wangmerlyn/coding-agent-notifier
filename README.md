@@ -132,7 +132,15 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
    # Or Feishu China endpoint
    export FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
    ```
-   For agent hooks, prefer the same user-level agent config pattern shown above. Repo `.env` remains a local-development fallback.
+   For agent hooks, prefer user-level config or a user-level env file. Repo `.env` remains a local-development fallback.
+
+   Codex hook env-file option:
+   ```bash
+   umask 077
+   cat > ~/.codex/vibe-coding-slack-notifier.env <<'EOF'
+   FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
+   EOF
+   ```
 
 3. **Send a manual test message**
    ```bash
@@ -150,7 +158,7 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
            "hooks": [
              {
                "type": "command",
-               "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
+               "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py --env-file /home/you/.codex/vibe-coding-slack-notifier.env --webhook-url-env FEISHU_WEBHOOK_URL"
              }
            ]
          }
@@ -158,7 +166,7 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
      }
    }
    ```
-   Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package. Keep `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` in `~/.codex/config.toml` under `[shell_environment_policy.set]`, then approve the hook from `/hooks` if Codex asks for review.
+   Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package, and replace `/home/you/.codex/vibe-coding-slack-notifier.env` with your user-level env file. You can also keep `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` in `~/.codex/config.toml` under `[shell_environment_policy.set]`, but `--env-file` makes the hook independent of whether the current Codex process has already loaded that config. Approve the hook from `/hooks` if Codex asks for review.
    Feishu/Lark custom bots send to the chat where the bot is installed, not to a specific user DM.
 
 ## Payload expectations

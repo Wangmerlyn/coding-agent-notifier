@@ -5,7 +5,7 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
 ## General pattern
 - Ensure `SLACK_BOT_TOKEN` and `SLACK_USER_ID` are available to the hook command.
 - For Feishu/Lark, ensure `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` is available to the hook command.
-- Simple setup: put those values in your user-level agent config. Avoid project-level config files and repo `.env` for real tokens.
+- Simple setup: put those values in your user-level agent config, or put them in a user-level env file loaded with `--env-file`. Avoid project-level config files and repo `.env` for real tokens.
 - Prefer the agent's native hook system. Use the Slack wrapper for robustness across stdin/file/inline payloads:
   ```bash
   /path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh
@@ -14,7 +14,7 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
   ```bash
   /path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py
   ```
-- Codex hook config belongs in `~/.codex/hooks.json`. Keep credentials in `~/.codex/config.toml` under `[shell_environment_policy.set]`.
+- Codex hook config belongs in `~/.codex/hooks.json`. Keep credentials in `~/.codex/config.toml` under `[shell_environment_policy.set]`, or in a 0600 user-level env file that the hook command loads explicitly.
 - Optionally capture the payload for debugging:
   ```bash
   DEBUG_CODEX_PAYLOAD=/tmp/codex_payload.json
@@ -22,7 +22,7 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
 - If your tool provides a payload file path for Slack, pass it as the first wrapper argument; if it pipes JSON, no args are needed.
 - For Feishu/Lark, pass payload files with `--payload-file /path/to/payload.json`.
 - If a tool still has no hook event, wrap the agent command and invoke the notifier after the command exits. See `docs/examples/copilot_wrapper.sh` for the fallback shape.
-- Secure setup: use an OS keychain, credential helper, or tightly permissioned credential file loaded only by the notifier. That narrows secret exposure but is intentionally not the default here.
+- Hardened setup: use an OS keychain or credential helper. That narrows secret exposure further but is intentionally not the default here.
 
 ## Claude Code
 - Supports a hook system; add a hook on events like `Stop` / `SessionEnd`.
@@ -113,6 +113,13 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
   LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here"
   ```
   See `docs/examples/codex/config.toml` for a full env sample. Optional env vars: `DEBUG_CODEX_PAYLOAD` (capture payload) and `ENV_FILE` (alternate env path).
+- For Feishu/Lark hooks, a user-level env file is often more deterministic because the hook command loads the webhook URL itself:
+  ```bash
+  umask 077
+  cat > ~/.codex/vibe-coding-slack-notifier.env <<'EOF'
+  FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
+  EOF
+  ```
 - Add the hook command in `~/.codex/hooks.json`.
 
   Slack wrapper:
@@ -142,7 +149,7 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
           "hooks": [
             {
               "type": "command",
-              "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
+              "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py --env-file /home/you/.codex/vibe-coding-slack-notifier.env --webhook-url-env FEISHU_WEBHOOK_URL"
             }
           ]
         }
@@ -150,7 +157,7 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
     }
   }
   ```
-  Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package. Set `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` first. See `docs/examples/codex/hooks.json`, `docs/examples/codex/hooks_lark.json`, and `docs/notifier_lark.md`.
+  Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package, and replace `/home/you/.codex/vibe-coding-slack-notifier.env` with your user-level env file. If you rely only on `~/.codex/config.toml`, make sure the running Codex process has loaded the updated config. See `docs/examples/codex/hooks.json`, `docs/examples/codex/hooks_lark.json`, and `docs/notifier_lark.md`.
 - After editing `~/.codex/hooks.json`, Codex may require hook review. Open `/hooks`, review the command, and enable/trust it. For scripted setup, query the Codex app-server RPC method `hooks/list`, read the hook entry's `currentHash`, and trust that exact value; do not hand-calculate or reuse an old hash.
 - Avoid using Codex top-level `notify` for new installs. If you must use it, remember that recent Codex versions append the payload as a positional argument; direct Feishu/Lark `notify` commands therefore need `--payload`.
 

@@ -14,6 +14,7 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
   ```bash
   /path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py
   ```
+- Codex hook config belongs in `~/.codex/hooks.json`. Keep credentials in `~/.codex/config.toml` under `[shell_environment_policy.set]`.
 - Optionally capture the payload for debugging:
   ```bash
   DEBUG_CODEX_PAYLOAD=/tmp/codex_payload.json
@@ -101,26 +102,60 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
   See `docs/examples/copilot_wrapper.sh` for a minimal fallback wrapper.
 
 ## Codex CLI (reference)
-- Example `~/.codex/config.toml` with simple user-level env and the Slack wrapper:
+- Put credentials in `~/.codex/config.toml`:
   ```toml
   model = "<YOUR_CODEX_MODEL_ID>"   # replace with your Codex model id
   model_reasoning_effort = "high"
-  notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"]
 
   [shell_environment_policy.set]
   SLACK_BOT_TOKEN = "xoxb-your-token-here"
   SLACK_USER_ID = "U12345678"
   LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here"
   ```
-  See `docs/examples/codex/config.toml` for a full sample. Optional flags: `DEBUG_CODEX_PAYLOAD` (capture payload) and `ENV_FILE` (alternate env path).
-- Example Feishu/Lark custom bot config when the hook pipes JSON to stdin:
-  ```toml
-  notify = ["/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"]
+  See `docs/examples/codex/config.toml` for a full env sample. Optional env vars: `DEBUG_CODEX_PAYLOAD` (capture payload) and `ENV_FILE` (alternate env path).
+- Add the hook command in `~/.codex/hooks.json`.
+
+  Slack wrapper:
+  ```json
+  {
+    "hooks": {
+      "Stop": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"
+            }
+          ]
+        }
+      ]
+    }
+  }
   ```
-  Set `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` first. See `docs/notifier_lark.md`.
+
+  Feishu/Lark custom bot:
+  ```json
+  {
+    "hooks": {
+      "Stop": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
+            }
+          ]
+        }
+      ]
+    }
+  }
+  ```
+  Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package. Set `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` first. See `docs/examples/codex/hooks.json`, `docs/examples/codex/hooks_lark.json`, and `docs/notifier_lark.md`.
+- After editing `~/.codex/hooks.json`, Codex may require hook review. Open `/hooks`, review the command, and enable/trust it. For scripted setup, query the Codex app-server RPC method `hooks/list`, read the hook entry's `currentHash`, and trust that exact value; do not hand-calculate or reuse an old hash.
+- Avoid using Codex top-level `notify` for new installs. If you must use it, remember that recent Codex versions append the payload as a positional argument; direct Feishu/Lark `notify` commands therefore need `--payload`.
 
 ## Tips
-- Keep the notify command short and use absolute paths.
+- Keep hook commands short and use absolute paths.
 - The wrapper reads the payload from a file path passed as `$1`. If `$1` is an inline JSON string, it's also handled. If no argument is given, it reads from stdin.
 - The Feishu/Lark script accepts stdin, `--payload`, or `--payload-file`.
 - Set `LOGLEVEL=WARNING` (or use `--log-level WARNING`) when calling `slack_notify.py` directly to avoid chatty stdout/stderr in host tools.

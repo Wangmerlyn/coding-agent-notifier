@@ -100,7 +100,8 @@ Custom bots send to the chat where the bot is installed, not to a user DM.
 For Codex, the most deterministic setup is a user-level env file loaded by the hook command:
 
 ```bash
-umask 077
+mkdir -p ~/.codex
+install -m 600 /dev/null ~/.codex/vibe-coding-slack-notifier.env
 cat > ~/.codex/vibe-coding-slack-notifier.env <<'EOF'
 FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
 EOF

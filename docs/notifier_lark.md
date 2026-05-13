@@ -62,7 +62,8 @@ The notifier auto-loads `.env` in the current directory, or a file passed with `
 For Codex hooks, an explicit user-level env file avoids stale-session issues where a running Codex process has not loaded a new `shell_environment_policy.set` value yet:
 
 ```bash
-umask 077
+mkdir -p ~/.codex
+install -m 600 /dev/null ~/.codex/vibe-coding-slack-notifier.env
 cat > ~/.codex/vibe-coding-slack-notifier.env <<'EOF'
 FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
 EOF

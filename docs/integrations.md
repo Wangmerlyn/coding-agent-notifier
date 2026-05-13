@@ -115,7 +115,8 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
   See `docs/examples/codex/config.toml` for a full env sample. Optional env vars: `DEBUG_CODEX_PAYLOAD` (capture payload) and `ENV_FILE` (alternate env path).
 - For Feishu/Lark hooks, a user-level env file is often more deterministic because the hook command loads the webhook URL itself:
   ```bash
-  umask 077
+  mkdir -p ~/.codex
+  install -m 600 /dev/null ~/.codex/vibe-coding-slack-notifier.env
   cat > ~/.codex/vibe-coding-slack-notifier.env <<'EOF'
   FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
   EOF

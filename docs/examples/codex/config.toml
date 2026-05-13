@@ -13,3 +13,5 @@ SLACK_USER_ID = "U12345678"
 # ENV_FILE = "/path/to/.env"                        # local env-file fallback
 
 # Put hook commands in ~/.codex/hooks.json; see docs/examples/codex/hooks.json.
+# For deterministic Feishu/Lark hooks, prefer a user-level env file loaded by
+# lark_notify.py with --env-file; see docs/examples/codex/hooks_lark.json.

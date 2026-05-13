@@ -21,7 +21,7 @@ Official setup docs:
 
 Use either variable name. `LARK_WEBHOOK_URL` wins when both are set.
 
-For agent hooks, the simple setup is user-level agent config. Keep real webhook URLs out of project-level config and repo `.env` files.
+For agent hooks, the simple setup is user-level agent config or a user-level env file loaded by the hook command. Keep real webhook URLs out of project-level config and repo `.env` files.
 
 Codex:
 ```toml
@@ -59,7 +59,17 @@ edit .env
 
 The notifier auto-loads `.env` in the current directory, or a file passed with `--env-file`.
 
-This is a simple setup, not secure secret storage. A secure setup would use an OS keychain, credential helper, or tightly permissioned credential file loaded only by the notifier, but that is intentionally outside the default quick path.
+For Codex hooks, an explicit user-level env file avoids stale-session issues where a running Codex process has not loaded a new `shell_environment_policy.set` value yet:
+
+```bash
+mkdir -p ~/.codex
+install -m 600 /dev/null ~/.codex/vibe-coding-slack-notifier.env
+cat > ~/.codex/vibe-coding-slack-notifier.env <<'EOF'
+FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
+EOF
+```
+
+This is simple secret handling, not a full credential manager. A more hardened setup would use an OS keychain or credential helper, but that is intentionally outside the default quick path.
 
 ## Manual smoke test
 
@@ -96,7 +106,7 @@ Prefer your agent's native hook system. Codex uses a user-level `hooks.json` fil
         "hooks": [
           {
             "type": "command",
-            "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py"
+            "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py --env-file /home/you/.codex/vibe-coding-slack-notifier.env --webhook-url-env FEISHU_WEBHOOK_URL"
           }
         ]
       }
@@ -105,10 +115,10 @@ Prefer your agent's native hook system. Codex uses a user-level `hooks.json` fil
 }
 ```
 
-Save that as `~/.codex/hooks.json`. Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package. Keep the webhook URL in `~/.codex/config.toml` under `[shell_environment_policy.set]`, then run Codex and approve the hook from `/hooks` if Codex says it needs review.
+Save that as `~/.codex/hooks.json`. Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package, and replace `/home/you/.codex/vibe-coding-slack-notifier.env` with your user-level env file. Keeping the webhook URL in `~/.codex/config.toml` under `[shell_environment_policy.set]` also works after Codex has loaded that config, but `--env-file` keeps the hook command self-contained. Run Codex and approve the hook from `/hooks` if Codex says it needs review.
 See `docs/examples/codex/hooks_lark.json` for a copy/paste starter.
 
-If you use `FEISHU_WEBHOOK_URL` and want to make the env var explicit, add the flag:
+If you keep the webhook in Codex config instead of an env file, you can omit `--env-file` and keep only the explicit env-var name:
 
 ```json
 {
@@ -178,6 +188,7 @@ The text body is generated from the same fields as the Slack notifier: `title`, 
 - `Missing Feishu/Lark webhook URL`: set `LARK_WEBHOOK_URL`, `FEISHU_WEBHOOK_URL`, `--webhook-url`, or `--webhook-url-env`.
 - `unrecognized arguments: {"type":"agent-turn-complete",...}`: the Codex native `notify` command is passing inline JSON as an argv value. Use `~/.codex/hooks.json`, or add `--payload` before the payload in the `notify` command.
 - Hook does not run in Codex: open `/hooks`, review the command, and make sure it is enabled/trusted. If scripting this, query the Codex app-server RPC method `hooks/list`, read the hook entry's `currentHash`, and trust that exact value.
+- Manual test succeeds but the Codex hook sends nothing: the hook process may not have the webhook env var. Add `--env-file /home/you/.codex/vibe-coding-slack-notifier.env --webhook-url-env FEISHU_WEBHOOK_URL` to the hook command, then re-open Codex or re-approve the modified hook from `/hooks`.
 - `bad webhook` or `access token invalid`: check that the full webhook URL was copied.
 - Keyword security failures: include the custom keyword in `--title` or in the agent payload text.
 - No chat message: confirm the custom bot is installed in the expected chat and that signing is disabled.

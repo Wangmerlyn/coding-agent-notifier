@@ -192,7 +192,7 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
   /path/to/coding-agent-notifier/scripts/notifier/agent_notify_wrapper.sh
   ```
 - To capture the final payload for debugging, set an env var before running Codex:
-  ```
+  ```bash
   export DEBUG_AGENT_PAYLOAD=/path/to/your/agent_payload.json
   ```
   The wrapper will write only the most relevant JSON payload to that path; unset the variable to stop logging.

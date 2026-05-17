@@ -40,7 +40,7 @@ This is a simple setup, not secure secret storage. A secure setup would use an O
 
 ## Script usage
 The notifier lives at `scripts/notifier/slack_notify.py` and accepts JSON payloads on stdin or via flags.
-```
+```bash
 # Send a quick manual notification
 echo '{"status":"success","title":"Agent run","summary":"Finished"}' \
   | python scripts/notifier/slack_notify.py --user-id U12345678
@@ -80,7 +80,7 @@ A concrete example is in `scripts/notifier/agent_notify_example.sh`.
   /path/to/coding-agent-notifier/scripts/notifier/agent_notify_wrapper.sh /path/to/payload.json
   ```
 - To capture the selected payload for inspection, set:
-  ```
+  ```bash
   export DEBUG_AGENT_PAYLOAD=/path/to/your/agent_payload.json
   ```
   Unset this variable to stop logging.

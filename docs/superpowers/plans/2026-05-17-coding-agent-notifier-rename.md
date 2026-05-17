@@ -10,7 +10,7 @@
 
 ---
 
-### Task 1: Python Package Rename And Compatibility
+## Task 1: Python Package Rename And Compatibility
 
 **Files:**
 - Rename: `src/codex_slack_notifier/` to `src/coding_agent_notifier/`

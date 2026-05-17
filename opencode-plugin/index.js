@@ -192,10 +192,16 @@ async function slackPost(token, endpoint, payload) {
 }
 
 async function parseOptionalJson(response) {
-  try {
-    return await response.json();
-  } catch {
+  const raw = await response.text();
+  if (raw.trim() === "") {
     return {};
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    const preview = raw.length > 500 ? `${raw.slice(0, 500)}...` : raw;
+    throw new Error(`Feishu/Lark returned a non-JSON response: ${JSON.stringify(preview)}`);
   }
 }
 

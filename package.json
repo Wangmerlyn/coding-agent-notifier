@@ -1,7 +1,7 @@
 {
-  "name": "opencode-vibe-coding-slack-notifier",
+  "name": "opencode-coding-agent-notifier",
   "version": "0.1.0",
-  "description": "OpenCode plugin: send Slack DM notifications when OpenCode sessions become idle/completed.",
+  "description": "OpenCode plugin: send coding agent notifications when OpenCode sessions become idle/completed.",
   "type": "module",
   "main": "./opencode-plugin/index.js",
   "types": "./opencode-plugin/index.d.ts",
@@ -19,19 +19,21 @@
     "opencode",
     "plugin",
     "slack",
+    "lark",
+    "feishu",
     "notifier",
     "agent",
-    "vibe-coding"
+    "coding-agent"
   ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Wangmerlyn/vibe-coding-slack-notifier.git"
+    "url": "git+https://github.com/Wangmerlyn/coding-agent-notifier.git"
   },
   "bugs": {
-    "url": "https://github.com/Wangmerlyn/vibe-coding-slack-notifier/issues"
+    "url": "https://github.com/Wangmerlyn/coding-agent-notifier/issues"
   },
-  "homepage": "https://github.com/Wangmerlyn/vibe-coding-slack-notifier#readme",
+  "homepage": "https://github.com/Wangmerlyn/coding-agent-notifier#readme",
   "peerDependencies": {
     "@opencode-ai/plugin": ">=0.15.0"
   }

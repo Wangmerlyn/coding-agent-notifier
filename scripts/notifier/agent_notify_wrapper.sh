@@ -35,7 +35,7 @@ ENV_FILE="${ENV_FILE:-"$REPO_ROOT/.env"}"
 # If DEBUG_AGENT_PAYLOAD is set to a filepath, the selected payload will be written there.
 # DEBUG_CODEX_PAYLOAD remains supported for older hook setups.
 filter_and_forward() {
-  REPO_ROOT="$REPO_ROOT" python3 - "$src" <<'PY'
+  python - "$src" <<'PY'
 import json
 import sys
 import pathlib
@@ -43,7 +43,6 @@ import os
 
 source = sys.argv[1]
 debug_path = os.environ.get("DEBUG_AGENT_PAYLOAD") or os.environ.get("DEBUG_CODEX_PAYLOAD")
-repo_root = os.environ.get("REPO_ROOT")
 pwd_env = os.environ.get("PWD")
 
 def read_lines():
@@ -88,7 +87,7 @@ sys.stdout.write(out)
 PY
 }
 
-if ! filter_and_forward | python3 "$SCRIPT_DIR/slack_notify.py" --env-file "$ENV_FILE"; then
+if ! filter_and_forward | python "$SCRIPT_DIR/slack_notify.py" --env-file "$ENV_FILE"; then
   echo "Notifier failed to send message" >&2
   exit 1
 fi

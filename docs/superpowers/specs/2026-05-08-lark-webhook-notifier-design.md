@@ -12,7 +12,7 @@ The supported names are both Feishu and Lark because the custom bot API shape is
 
 ## Architecture
 
-The existing `build_message()` function remains the single formatter for coding-agent payloads. A new webhook notifier class will live in `src/codex_slack_notifier/notifier.py` beside `SlackNotifier` to keep the public surface small and avoid a package split for this narrow feature.
+The existing `build_message()` function remains the single formatter for coding-agent payloads. A new webhook notifier class will live in `src/coding_agent_notifier/notifier.py` beside `SlackNotifier` to keep the public surface small and avoid a package split for this narrow feature.
 
 The new client will POST a text message body to the configured webhook:
 

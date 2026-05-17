@@ -46,7 +46,7 @@ The full rename covers:
 
 ## Validation
 
-- `PYTHONPATH=/home/wsy0227/new_test/vibe-coding-slack-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier`
+- `PYTHONPATH=/path/to/coding-agent-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier`
 - `ruff check .`
 - `git diff --check`
 - Manual grep for old branding references, allowing only compatibility notes, provider-specific Slack docs/classes, and old GitHub URLs if needed before the GitHub rename lands.

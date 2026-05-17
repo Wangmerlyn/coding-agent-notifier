@@ -14,9 +14,9 @@
 
 **Files:**
 - Rename: `src/codex_slack_notifier/` to `src/coding_agent_notifier/`
-- Create: `src/codex_slack_notifier/__init__.py`
-- Create: `src/codex_slack_notifier/notifier.py`
-- Modify: `src/coding_agent_notifier/__init__.py`
+- Create: `src/coding_agent_notifier/__init__.py`
+- Create: `src/coding_agent_notifier/notifier.py`
+- Modify: `src/codex_slack_notifier/__init__.py`
 - Modify: `src/coding_agent_notifier/notifier.py`
 - Modify: `pyproject.toml`
 - Modify: `scripts/notifier/slack_notify.py`
@@ -29,7 +29,7 @@ Add tests that import `coding_agent_notifier`, confirm `NotificationError` exist
 
 - [ ] **Step 2: Run targeted tests and confirm RED**
 
-Run: `PYTHONPATH=/home/wsy0227/new_test/vibe-coding-slack-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier/test_slack_notify.py -q`
+Run: `PYTHONPATH=/path/to/coding-agent-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier/test_slack_notify.py -q`
 
 Expected: import failure for `coding_agent_notifier`.
 
@@ -43,7 +43,7 @@ Set `pyproject.toml` project name to `coding-agent-notifier`, description to pro
 
 - [ ] **Step 5: Run tests and commit**
 
-Run: `PYTHONPATH=/home/wsy0227/new_test/vibe-coding-slack-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier/test_slack_notify.py -q`
+Run: `PYTHONPATH=/path/to/coding-agent-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier/test_slack_notify.py -q`
 
 Commit: `git commit -m "[notifier] refactor: rename python package to coding agent notifier"`
 
@@ -60,7 +60,7 @@ Add tests that assert `agent_notify_wrapper.sh` exists, calls `slack_notify.py`,
 
 - [ ] **Step 2: Run targeted tests and confirm RED**
 
-Run: `PYTHONPATH=/home/wsy0227/new_test/vibe-coding-slack-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier/test_slack_notify.py -q`
+Run: `PYTHONPATH=/path/to/coding-agent-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier/test_slack_notify.py -q`
 
 Expected: missing `agent_notify_wrapper.sh`.
 
@@ -70,7 +70,7 @@ Move the current wrapper implementation to `agent_notify_wrapper.sh`, change deb
 
 - [ ] **Step 4: Run tests and commit**
 
-Run: `PYTHONPATH=/home/wsy0227/new_test/vibe-coding-slack-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier/test_slack_notify.py -q`
+Run: `PYTHONPATH=/path/to/coding-agent-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier/test_slack_notify.py -q`
 
 Commit: `git commit -m "[notifier] refactor: add provider-neutral hook wrapper"`
 
@@ -144,7 +144,7 @@ Commit: `git commit -m "[docs] docs: rename project to coding agent notifier"`
 Run:
 
 ```bash
-PYTHONPATH=/home/wsy0227/new_test/vibe-coding-slack-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier
+PYTHONPATH=/path/to/coding-agent-notifier/.worktrees/general-agent-notifier-rename/src python -m pytest tests/notifier
 ruff check .
 git diff --check
 ```
@@ -154,7 +154,7 @@ git diff --check
 Run:
 
 ```bash
-rg -n "vibe-coding-slack-notifier|codex_slack_notifier|codex-slack-notifier|opencode-vibe-coding-slack-notifier|DEBUG_CODEX_PAYLOAD|codex_notify_wrapper" .
+rg -n "coding-agent-notifier|coding_agent_notifier|codex_slack_notifier|opencode-coding-agent-notifier|DEBUG_AGENT_PAYLOAD|codex_notify_wrapper" .
 ```
 
 Only compatibility notes, compatibility shims, provider-specific Slack names, and intentional old-name migration references should remain.

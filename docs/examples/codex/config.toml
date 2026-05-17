@@ -9,7 +9,7 @@ SLACK_USER_ID = "U12345678"
 # FEISHU_WEBHOOK_URL = "https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here"
 
 # Optional:
-# DEBUG_CODEX_PAYLOAD = "/tmp/codex_payload.json"   # capture payload used
+# DEBUG_AGENT_PAYLOAD = "/tmp/agent_payload.json"   # capture payload used
 # ENV_FILE = "/path/to/.env"                        # local env-file fallback
 
 # Put hook commands in ~/.codex/hooks.json; see docs/examples/codex/hooks.json.

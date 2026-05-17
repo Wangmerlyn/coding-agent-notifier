@@ -19,7 +19,9 @@ def test_package_json_exposes_opencode_plugin_entrypoint() -> None:
     assert data["main"] == "./opencode-plugin/index.js"
     assert data["types"] == "./opencode-plugin/index.d.ts"
     assert data["exports"]["."]["import"] == "./opencode-plugin/index.js"
-    assert data["repository"]["url"] == "git+https://github.com/Wangmerlyn/coding-agent-notifier.git"
+    assert (
+        data["repository"]["url"] == "git+https://github.com/Wangmerlyn/coding-agent-notifier.git"
+    )
     assert data["bugs"]["url"] == "https://github.com/Wangmerlyn/coding-agent-notifier/issues"
     assert data["homepage"] == "https://github.com/Wangmerlyn/coding-agent-notifier#readme"
 

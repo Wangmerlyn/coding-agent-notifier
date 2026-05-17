@@ -13,6 +13,9 @@ For integrations with coding-agent hooks (Codex CLI, Claude Code, Gemini CLI, Op
 Sample hook config snippets live under `docs/examples/`; the wrapper example is still available for tools without a hook event.
 For OpenCode marketplace/npm-style plugin setup, see `docs/opencode_plugin.md`.
 
+## Rename Announcement (2026-05-17)
+This project has been renamed from Vibe Coding Slack Notifier to Coding Agent Notifier. Old names including `vibe-coding-slack-notifier`, `codex-slack-notifier`, `codex_slack_notifier`, and `opencode-vibe-coding-slack-notifier` remain compatibility aliases for existing setups: old repo links redirect, and old Python import, wrapper, debug, and env names continue to work. New installs should use `coding-agent-notifier`, the `coding-agent-notifier` Python distribution, the `coding_agent_notifier` import, and `opencode-coding-agent-notifier`.
+
 ## Why This Notifier
 - Most coding-agent CLIs now expose hooks or plugin events, but local editor notifications still vary by tool and environment.
 - CLI-local tricks (terminal bells, desktop notifications) often fail over Remote-SSH because the sound/notification doesn’t propagate, leaving remote users uninformed.

@@ -38,6 +38,13 @@ function parseRetryAfterMs(retryAfterHeader) {
   return Math.max(1_000, Math.ceil(parsed * 1_000));
 }
 
+function resolveTimeoutMs() {
+  return parsePositiveInt(
+    process.env.OPENCODE_AGENT_NOTIFIER_TIMEOUT_MS ?? process.env.SLACK_NOTIFY_TIMEOUT_MS,
+    DEFAULT_TIMEOUT_MS,
+  );
+}
+
 function resolveEnvFileCandidates() {
   const candidates = [];
   if (process.env.OPENCODE_AGENT_NOTIFIER_ENV_FILE) {
@@ -137,7 +144,7 @@ function buildMessage(repo, sessionId) {
 }
 
 async function slackPost(token, endpoint, payload) {
-  const timeoutMs = parsePositiveInt(process.env.SLACK_NOTIFY_TIMEOUT_MS, DEFAULT_TIMEOUT_MS);
+  const timeoutMs = resolveTimeoutMs();
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     const controller = new AbortController();
@@ -184,8 +191,32 @@ async function slackPost(token, endpoint, payload) {
   throw new Error(`Slack request failed for ${endpoint}`);
 }
 
+async function parseOptionalJson(response) {
+  try {
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
+
+function raiseForLarkApiError(data) {
+  if (!data || typeof data !== "object") {
+    return;
+  }
+
+  if (data.code !== undefined && data.code !== 0) {
+    throw new Error(`Feishu/Lark API error: ${data.msg || data.message || "unknown_error"}`);
+  }
+
+  if (data.StatusCode !== undefined && data.StatusCode !== 0) {
+    throw new Error(
+      `Feishu/Lark API error: ${data.StatusMessage || data.message || "unknown_error"}`,
+    );
+  }
+}
+
 async function sendLarkTextWebhook(webhookUrl, text) {
-  const timeoutMs = parsePositiveInt(process.env.SLACK_NOTIFY_TIMEOUT_MS, DEFAULT_TIMEOUT_MS);
+  const timeoutMs = resolveTimeoutMs();
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     const controller = new AbortController();
@@ -222,6 +253,8 @@ async function sendLarkTextWebhook(webhookUrl, text) {
         throw new Error(`Feishu/Lark HTTP ${response.status}: ${body || "empty response"}`);
       }
 
+      const data = await parseOptionalJson(response);
+      raiseForLarkApiError(data);
       return;
     } finally {
       clearTimeout(timer);

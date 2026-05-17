@@ -47,6 +47,8 @@ def test_opencode_plugin_files_exist() -> None:
     assert '.config", "opencode", "slack-notifier.env' in js_source
     assert "OPENCODE_AGENT_NOTIFIER_DEBOUNCE_MS" in js_source
     assert "OPENCODE_SLACK_DEBOUNCE_MS" in js_source
+    assert "OPENCODE_AGENT_NOTIFIER_TIMEOUT_MS" in js_source
+    assert "SLACK_NOTIFY_TIMEOUT_MS" in js_source
     assert "OPENCODE_AGENT_NOTIFIER_DEBUG" in js_source
     assert "OPENCODE_SLACK_DEBUG" in js_source
 
@@ -141,3 +143,60 @@ def test_opencode_plugin_sends_slack_and_lark_when_both_are_configured(tmp_path:
             "text": "OpenCode task completed at repo /tmp/worktree\nSession: session-123",
         },
     }
+
+
+def test_opencode_plugin_reports_lark_api_error(tmp_path: Path) -> None:
+    script = tmp_path / "exercise-opencode-lark-error.mjs"
+    plugin_path = (Path.cwd() / "opencode-plugin/index.js").resolve().as_uri()
+    script.write_text(
+        textwrap.dedent(
+            f"""
+            globalThis.fetch = async () => ({{
+              ok: true,
+              status: 200,
+              headers: {{ get: () => null }},
+              json: async () => ({{ code: 19001, msg: "bad webhook" }}),
+              text: async () => "",
+            }});
+
+            const errors = [];
+            console.error = (message) => errors.push(String(message));
+
+            const pluginModule = await import("{plugin_path}");
+            const plugin = await pluginModule.OpenCodeAgentNotifierPlugin({{
+              directory: "/tmp/repo",
+              worktree: "",
+            }});
+
+            await plugin.event({{
+              event: {{
+                type: "session.idle",
+                properties: {{ sessionID: "session-456" }},
+              }},
+            }});
+
+            console.log(JSON.stringify({{ errors }}));
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    env = {
+        **os.environ,
+        "SLACK_BOT_TOKEN": "",
+        "SLACK_USER_ID": "",
+        "LARK_WEBHOOK_URL": "https://open.feishu.example/webhook",
+    }
+    result = subprocess.run(
+        ["node", str(script)],
+        check=True,
+        capture_output=True,
+        env=env,
+        text=True,
+    )
+    output = json.loads(result.stdout)
+
+    assert output["errors"] == [
+        "[opencode-coding-agent-notifier] Failed to send Feishu/Lark notification: "
+        "Feishu/Lark API error: bad webhook"
+    ]

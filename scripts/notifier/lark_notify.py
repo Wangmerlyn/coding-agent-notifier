@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-"""CLI entrypoint for codex_slack_notifier Feishu/Lark webhook notifications."""
+"""CLI entrypoint for Coding Agent Notifier Feishu/Lark webhook notifications."""
 
-from codex_slack_notifier.notifier import lark_main
+from coding_agent_notifier.notifier import lark_main
 
 
 if __name__ == "__main__":

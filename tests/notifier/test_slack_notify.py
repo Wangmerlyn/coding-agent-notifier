@@ -5,8 +5,9 @@ from typing import Any, Dict, List
 
 import pytest
 
-from codex_slack_notifier import notifier
-from codex_slack_notifier.notifier import (
+from coding_agent_notifier import notifier
+from coding_agent_notifier.notifier import (
+    NotificationError,
     SlackNotificationError,
     SlackNotifier,
     build_message,
@@ -47,6 +48,41 @@ class FakeSession:
     ) -> FakeResponse:
         self.posts.append({"url": url, "headers": headers, "json": json, "timeout": timeout})
         return self.responses.pop(0)
+
+
+def test_new_package_is_canonical_and_old_package_reexports_compatibility() -> None:
+    import codex_slack_notifier
+    import codex_slack_notifier.notifier as legacy_notifier
+    import coding_agent_notifier
+    import coding_agent_notifier.notifier as canonical_notifier
+
+    assert coding_agent_notifier.SlackNotifier is SlackNotifier
+    assert codex_slack_notifier.SlackNotifier is SlackNotifier
+    assert legacy_notifier.SlackNotifier is canonical_notifier.SlackNotifier
+    assert SlackNotificationError is NotificationError
+    assert legacy_notifier.NotificationError is NotificationError
+    assert legacy_notifier.SlackNotificationError is NotificationError
+
+
+def test_slack_main_is_canonical_and_main_is_compatibility_alias() -> None:
+    assert notifier.main is notifier.slack_main
+
+
+def test_agent_notify_wrapper_is_canonical_and_codex_wrapper_is_compatibility() -> None:
+    agent_wrapper = Path("scripts/notifier/agent_notify_wrapper.sh")
+    codex_wrapper = Path("scripts/notifier/codex_notify_wrapper.sh")
+
+    assert agent_wrapper.exists()
+    assert codex_wrapper.exists()
+
+    agent_source = agent_wrapper.read_text(encoding="utf-8")
+    codex_source = codex_wrapper.read_text(encoding="utf-8")
+
+    assert "DEBUG_AGENT_PAYLOAD" in agent_source
+    assert "DEBUG_CODEX_PAYLOAD" in agent_source
+    assert "slack_notify.py" in agent_source
+    assert "agent_notify_wrapper.sh" in codex_source
+    assert "exec" in codex_source
 
 
 def test_build_message_prefers_payload_fields() -> None:
@@ -179,7 +215,7 @@ def test_lark_send_text_rejects_nonzero_code_response() -> None:
     session = FakeSession(responses)
     lark_notifier = notifier.LarkNotifier("https://example.test/hook", session=session)
 
-    with pytest.raises(SlackNotificationError, match="bad webhook"):
+    with pytest.raises(NotificationError, match="bad webhook"):
         lark_notifier.send_text("hello")
 
 
@@ -188,7 +224,7 @@ def test_feishu_send_text_rejects_nonzero_status_code_response() -> None:
     session = FakeSession(responses)
     lark_notifier = notifier.LarkNotifier("https://example.test/hook", session=session)
 
-    with pytest.raises(SlackNotificationError, match="bad webhook"):
+    with pytest.raises(NotificationError, match="bad webhook"):
         lark_notifier.send_text("hello")
 
 
@@ -227,7 +263,7 @@ def test_load_payload_rejects_invalid_json(tmp_path: Path) -> None:
     payload_path = tmp_path / "bad.json"
     payload_path.write_text("not-json", encoding="utf-8")
 
-    with pytest.raises(SlackNotificationError):
+    with pytest.raises(NotificationError):
         load_payload(None, str(payload_path))
 
 
@@ -245,7 +281,7 @@ def test_env_file_loader_does_not_overwrite_existing(
     env_file.write_text("SLACK_BOT_TOKEN=token-from-file\n", encoding="utf-8")
     monkeypatch.setenv("SLACK_BOT_TOKEN", "token-from-env")
 
-    from codex_slack_notifier import notifier
+    from coding_agent_notifier import notifier
 
     notifier._load_env_file(str(env_file))
 
@@ -278,7 +314,7 @@ def test_main_uses_user_id_from_env_file(tmp_path: Path, monkeypatch: pytest.Mon
 
     monkeypatch.setattr(notifier.SlackNotifier, "send_dm", fake_send_dm)
 
-    exit_code = notifier.main(
+    exit_code = notifier.slack_main(
         ["--env-file", str(env_file), "--payload", '{"status":"ok","repo":"/tmp/repo"}']
     )
 

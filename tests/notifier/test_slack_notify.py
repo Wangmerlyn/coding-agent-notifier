@@ -1,5 +1,7 @@
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -83,6 +85,54 @@ def test_agent_notify_wrapper_is_canonical_and_codex_wrapper_is_compatibility() 
     assert "slack_notify.py" in agent_source
     assert "agent_notify_wrapper.sh" in codex_source
     assert "exec" in codex_source
+
+
+def test_agent_notify_wrapper_forwards_multiline_json_payload(tmp_path: Path) -> None:
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    captured_payload = tmp_path / "forwarded.json"
+    fake_python = fake_bin / "python"
+    fake_python.write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "-" ]]; then
+  exec "$REAL_PYTHON" "$@"
+fi
+if [[ "${1:-}" == */slack_notify.py ]]; then
+  cat > "$FAKE_SLACK_PAYLOAD"
+  exit 0
+fi
+exec "$REAL_PYTHON" "$@"
+""",
+        encoding="utf-8",
+    )
+    fake_python.chmod(0o755)
+
+    payload = {
+        "title": "Pretty JSON",
+        "status": "success",
+        "summary": "multi-line payload survived the wrapper",
+        "repo": "/tmp/pretty-json-repo",
+    }
+    env = os.environ.copy()
+    env.update(
+        {
+            "PATH": f"{fake_bin}:{env.get('PATH', '')}",
+            "REAL_PYTHON": sys.executable,
+            "FAKE_SLACK_PAYLOAD": str(captured_payload),
+        }
+    )
+
+    result = subprocess.run(
+        ["bash", "scripts/notifier/agent_notify_wrapper.sh", json.dumps(payload, indent=2)],
+        text=True,
+        capture_output=True,
+        env=env,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads(captured_payload.read_text(encoding="utf-8")) == payload
 
 
 def test_build_message_prefers_payload_fields() -> None:
@@ -265,6 +315,11 @@ def test_load_payload_rejects_invalid_json(tmp_path: Path) -> None:
 
     with pytest.raises(NotificationError):
         load_payload(None, str(payload_path))
+
+
+def test_load_payload_rejects_non_object_json() -> None:
+    with pytest.raises(NotificationError, match="JSON payload must be an object"):
+        load_payload('["status", "done"]', None)
 
 
 def test_build_message_with_empty_payload_returns_default() -> None:

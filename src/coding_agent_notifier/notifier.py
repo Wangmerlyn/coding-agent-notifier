@@ -246,9 +246,12 @@ def load_payload(payload_arg: Optional[str], payload_file: Optional[str]) -> Dic
         return {}
 
     try:
-        return json.loads(raw)
+        payload = json.loads(raw)
     except json.JSONDecodeError as exc:
         raise NotificationError(f"Invalid JSON payload: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise NotificationError("JSON payload must be an object")
+    return payload
 
 
 def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:

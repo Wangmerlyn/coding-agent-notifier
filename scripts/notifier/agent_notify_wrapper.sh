@@ -45,12 +45,30 @@ source = sys.argv[1]
 debug_path = os.environ.get("DEBUG_AGENT_PAYLOAD") or os.environ.get("DEBUG_CODEX_PAYLOAD")
 pwd_env = os.environ.get("PWD")
 
-def read_lines():
+def read_text():
     if source != "/dev/stdin" and pathlib.Path(source).exists():
-        return pathlib.Path(source).read_text(encoding="utf-8", errors="ignore").splitlines()
+        return pathlib.Path(source).read_text(encoding="utf-8", errors="ignore")
     if sys.stdin.isatty():
-        return []
-    return sys.stdin.read().splitlines()
+        return ""
+    return sys.stdin.read()
+
+def iter_json_objects(text: str):
+    cleaned = text.replace("\x00", "").strip()
+    if cleaned:
+        try:
+            yield json.loads(cleaned)
+            return
+        except json.JSONDecodeError:
+            pass
+
+    for line in text.splitlines():
+        clean = line.replace("\x00", "").strip()
+        if not clean:
+            continue
+        try:
+            yield json.loads(clean)
+        except json.JSONDecodeError:
+            continue
 
 def is_relevant(obj: dict) -> bool:
     keys = {"status", "state", "title", "event", "task", "summary", "message", "details"}
@@ -59,14 +77,7 @@ def is_relevant(obj: dict) -> bool:
 last_valid = None
 last_relevant = None
 
-for line in read_lines():
-    clean = line.replace("\x00", "").strip()
-    if not clean:
-        continue
-    try:
-        obj = json.loads(clean)
-    except json.JSONDecodeError:
-        continue
+for obj in iter_json_objects(read_text()):
     last_valid = obj
     if isinstance(obj, dict) and is_relevant(obj):
         last_relevant = obj

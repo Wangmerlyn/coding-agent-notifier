@@ -6,7 +6,7 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
 - Ensure `SLACK_BOT_TOKEN` and `SLACK_USER_ID` are available to the hook command.
 - For Feishu/Lark, ensure `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` is available to the hook command.
 - Simple setup: put those values in your user-level agent config, or put them in a user-level env file loaded with `--env-file`. Avoid project-level config files and repo `.env` for real tokens.
-- Prefer the agent's native hook system. Use the Slack wrapper for robustness across stdin/file/inline payloads:
+- Prefer the agent's native hook system. Use the agent wrapper for Slack robustness across stdin/file/inline payloads:
   ```bash
   /path/to/coding-agent-notifier/scripts/notifier/agent_notify_wrapper.sh
   ```
@@ -90,7 +90,7 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
   See `docs/examples/opencode/agentNotifier.js`.
 
 ## Copilot CLI, Cursor, and similar agents
-- If your installed version exposes a completion/stop hook, configure that hook to run the Slack wrapper:
+- If your installed version exposes a completion/stop hook, configure that hook to run the agent wrapper:
   ```bash
   /path/to/coding-agent-notifier/scripts/notifier/agent_notify_wrapper.sh
   ```
@@ -123,7 +123,7 @@ Most coding-agent CLIs now expose hooks or plugin points that can run shell comm
   ```
 - Add the hook command in `~/.codex/hooks.json`.
 
-  Slack wrapper:
+  Agent wrapper for Slack:
   ```json
   {
     "hooks": {

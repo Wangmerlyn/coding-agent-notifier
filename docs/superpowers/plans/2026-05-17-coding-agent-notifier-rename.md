@@ -154,7 +154,7 @@ git diff --check
 Run:
 
 ```bash
-rg -n "coding-agent-notifier|coding_agent_notifier|codex_slack_notifier|opencode-coding-agent-notifier|DEBUG_AGENT_PAYLOAD|codex_notify_wrapper" .
+rg -n "vibe-coding-slack-notifier|codex_slack_notifier|codex-slack-notifier|opencode-vibe-coding-slack-notifier|DEBUG_CODEX_PAYLOAD|codex_notify_wrapper" .
 ```
 
 Only compatibility notes, compatibility shims, provider-specific Slack names, and intentional old-name migration references should remain.

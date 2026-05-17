@@ -5,10 +5,10 @@ This repository now exposes an installable OpenCode plugin package:
 - npm package: `opencode-coding-agent-notifier`
 - plugin export: `OpenCodeAgentNotifierPlugin` (default export included)
 
-The plugin sends Slack DM notifications when OpenCode emits `session.idle`.
+The plugin sends Slack DM notifications and/or Feishu/Lark custom bot notifications when OpenCode emits `session.idle`. If both provider configurations are present, it sends to both.
 `OpenCodeSlackNotifierPlugin` remains available only as a compatibility alias for older plugin imports.
 
-## 1) Configure Slack credentials (recommended: env file, no manual export)
+## 1) Configure Provider Credentials (recommended: env file, no manual export)
 
 Create `~/.config/opencode/agent-notifier.env`:
 
@@ -17,6 +17,10 @@ mkdir -p ~/.config/opencode
 cat > ~/.config/opencode/agent-notifier.env <<'EOF'
 SLACK_BOT_TOKEN=xoxb-your-token-here
 SLACK_USER_ID=U12345678
+# Optional Feishu/Lark custom bot target:
+# LARK_WEBHOOK_URL=https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here
+# or:
+# FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
 EOF
 ```
 
@@ -33,6 +37,7 @@ You can still use direct environment variables if preferred:
 ```bash
 export SLACK_BOT_TOKEN=xoxb-your-token-here
 export SLACK_USER_ID=U12345678
+export LARK_WEBHOOK_URL=https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here
 ```
 
 Optional:
@@ -87,7 +92,9 @@ Start any OpenCode task and wait for the session to become idle; the plugin will
 ## Troubleshooting
 
 - `missing_scope`: ensure Slack app includes `chat:write` and `im:write`/`conversations:write`, then reinstall app to workspace.
-- No message received: verify `SLACK_BOT_TOKEN` and `SLACK_USER_ID` are exported in the same environment where OpenCode runs.
+- Feishu/Lark API error: verify the custom bot webhook URL, keyword security settings, and whether signing is disabled.
+- No Slack message received: verify `SLACK_BOT_TOKEN` and `SLACK_USER_ID` are exported in the same environment where OpenCode runs.
+- No Feishu/Lark message received: verify `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` is exported or present in the env file.
 - No message received: confirm credentials exist in `~/.config/opencode/agent-notifier.env` or set `OPENCODE_AGENT_NOTIFIER_ENV_FILE`.
 - Repeated messages: increase `OPENCODE_AGENT_NOTIFIER_DEBOUNCE_MS`.
 

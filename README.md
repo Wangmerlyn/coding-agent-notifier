@@ -13,7 +13,7 @@ For integrations with coding-agent hooks (Codex CLI, Claude Code, Gemini CLI, Op
 Sample hook config snippets live under `docs/examples/`; the wrapper example is still available for tools without a hook event.
 For OpenCode marketplace/npm-style plugin setup, see `docs/opencode_plugin.md`.
 
-## Why This Slack Notifier
+## Why This Notifier
 - Most coding-agent CLIs now expose hooks or plugin events, but local editor notifications still vary by tool and environment.
 - CLI-local tricks (terminal bells, desktop notifications) often fail over Remote-SSH because the sound/notification doesn’t propagate, leaving remote users uninformed.
 - This project gives those hooks a remote-safe notification target: Slack DMs or Feishu/Lark chats that work independently of where the agent runs.
@@ -113,6 +113,10 @@ mkdir -p ~/.config/opencode
 cat > ~/.config/opencode/agent-notifier.env <<'EOF'
 SLACK_BOT_TOKEN=xoxb-your-token-here
 SLACK_USER_ID=U12345678
+# Optional Feishu/Lark custom bot target:
+# LARK_WEBHOOK_URL=https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here
+# or:
+# FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
 EOF
 ```
 

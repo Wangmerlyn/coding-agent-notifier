@@ -12,10 +12,10 @@ fi
 # Replace U12345678 with your Slack User ID and adjust the path to this repository.
 # For real hooks, prefer the wrapper so stdin, inline JSON, and payload-file inputs all work:
 #   ~/.codex/hooks.json -> command:
-#   /home/you/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh
+#   /path/to/coding-agent-notifier/scripts/notifier/agent_notify_wrapper.sh
 # This script keeps the direct CLI call as a minimal smoke-test example.
 
-python /home/you/vibe-coding-slack-notifier/scripts/notifier/slack_notify.py --user-id "${SLACK_USER_ID:-U12345678}" <<'JSON'
+python /path/to/coding-agent-notifier/scripts/notifier/slack_notify.py --user-id "${SLACK_USER_ID:-U12345678}" <<'JSON'
 {
   "status": "success",
   "title": "Sample agent run",

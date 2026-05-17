@@ -4,7 +4,7 @@
 
 **Goal:** Add Feishu/Lark custom bot webhook support with a tested CLI and install documentation.
 
-**Architecture:** Keep the shared payload formatter in `codex_slack_notifier.notifier`. Add a small Feishu/Lark webhook client beside the existing Slack client, then expose it through a new `scripts/notifier/lark_notify.py` entrypoint and focused docs/examples.
+**Architecture:** Keep the shared payload formatter in `coding_agent_notifier.notifier`. Add a small Feishu/Lark webhook client beside the existing Slack client, then expose it through a new `scripts/notifier/lark_notify.py` entrypoint and focused docs/examples.
 
 **Tech Stack:** Python 3.12, `requests`, pytest, ruff, shell examples, Markdown docs.
 
@@ -12,7 +12,7 @@
 
 ## File Structure
 
-- Modify `src/codex_slack_notifier/notifier.py`: add `LarkNotifier`, webhook response validation, CLI args, and `lark_main()`.
+- Modify `src/coding_agent_notifier/notifier.py`: add `LarkNotifier`, webhook response validation, CLI args, and `lark_main()`.
 - Modify `tests/notifier/test_slack_notify.py`: add webhook client and CLI tests using the existing fake session pattern.
 - Create `scripts/notifier/lark_notify.py`: executable Python entrypoint calling `lark_main()`.
 - Create `scripts/notifier/lark_notify_example.sh`: manual example matching the Slack example style.
@@ -24,7 +24,7 @@
 
 **Files:**
 - Modify: `tests/notifier/test_slack_notify.py`
-- Modify: `src/codex_slack_notifier/notifier.py`
+- Modify: `src/coding_agent_notifier/notifier.py`
 
 - [ ] **Step 1: Write failing client tests**
 
@@ -32,7 +32,7 @@ Add tests that call `LarkNotifier("https://example.test/hook", session=session).
 
 - [ ] **Step 2: Run client tests to verify red**
 
-Run: `PYTHONPATH=/home/wsy0227/new_test/vibe-coding-slack-notifier/src python -m pytest tests/notifier/test_slack_notify.py -k 'lark or feishu' -q`
+Run: `PYTHONPATH=/path/to/coding-agent-notifier/src python -m pytest tests/notifier/test_slack_notify.py -k 'lark or feishu' -q`
 
 Expected: tests fail because `LarkNotifier` does not exist.
 
@@ -42,19 +42,19 @@ Add a `LarkNotifier` class that posts text messages to a webhook URL with `Conte
 
 - [ ] **Step 4: Run client tests to verify green**
 
-Run: `PYTHONPATH=/home/wsy0227/new_test/vibe-coding-slack-notifier/src python -m pytest tests/notifier/test_slack_notify.py -k 'lark or feishu' -q`
+Run: `PYTHONPATH=/path/to/coding-agent-notifier/src python -m pytest tests/notifier/test_slack_notify.py -k 'lark or feishu' -q`
 
 Expected: selected tests pass.
 
 - [ ] **Step 5: Commit**
 
-Run: `git add src/codex_slack_notifier/notifier.py tests/notifier/test_slack_notify.py && git commit -m "feat: add lark webhook client"`
+Run: `git add src/coding_agent_notifier/notifier.py tests/notifier/test_slack_notify.py && git commit -m "feat: add lark webhook client"`
 
 ## Task 2: Feishu/Lark CLI
 
 **Files:**
 - Modify: `tests/notifier/test_slack_notify.py`
-- Modify: `src/codex_slack_notifier/notifier.py`
+- Modify: `src/coding_agent_notifier/notifier.py`
 - Create: `scripts/notifier/lark_notify.py`
 
 - [ ] **Step 1: Write failing CLI tests**
@@ -63,7 +63,7 @@ Add tests for `lark_main(["--env-file", str(env_file), "--payload", "{\"status\"
 
 - [ ] **Step 2: Run CLI tests to verify red**
 
-Run: `PYTHONPATH=/home/wsy0227/new_test/vibe-coding-slack-notifier/src python -m pytest tests/notifier/test_slack_notify.py -k 'lark_main or feishu' -q`
+Run: `PYTHONPATH=/path/to/coding-agent-notifier/src python -m pytest tests/notifier/test_slack_notify.py -k 'lark_main or feishu' -q`
 
 Expected: tests fail because `lark_main()` and/or the script entrypoint do not exist.
 
@@ -73,13 +73,13 @@ Add `lark_main()` with `--webhook-url`, `--webhook-url-env`, `--env-file`, `--pa
 
 - [ ] **Step 4: Run CLI tests to verify green**
 
-Run: `PYTHONPATH=/home/wsy0227/new_test/vibe-coding-slack-notifier/src python -m pytest tests/notifier/test_slack_notify.py -k 'lark_main or feishu' -q`
+Run: `PYTHONPATH=/path/to/coding-agent-notifier/src python -m pytest tests/notifier/test_slack_notify.py -k 'lark_main or feishu' -q`
 
 Expected: selected tests pass.
 
 - [ ] **Step 5: Commit**
 
-Run: `git add src/codex_slack_notifier/notifier.py tests/notifier/test_slack_notify.py scripts/notifier/lark_notify.py && git commit -m "feat: add lark notify cli"`
+Run: `git add src/coding_agent_notifier/notifier.py tests/notifier/test_slack_notify.py scripts/notifier/lark_notify.py && git commit -m "feat: add lark notify cli"`
 
 ## Task 3: Docs And Examples
 
@@ -112,7 +112,7 @@ Run: `git add .env.example README.md docs/guide.md docs/integrations.md docs/not
 
 - [ ] **Step 1: Run full tests**
 
-Run: `PYTHONPATH=/home/wsy0227/new_test/vibe-coding-slack-notifier/src python -m pytest tests/notifier`
+Run: `PYTHONPATH=/path/to/coding-agent-notifier/src python -m pytest tests/notifier`
 
 Expected: all notifier tests pass.
 

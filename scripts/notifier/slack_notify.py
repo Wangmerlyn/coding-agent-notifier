@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-"""CLI entrypoint for codex_slack_notifier Slack DM notifications."""
+"""CLI entrypoint for Coding Agent Notifier Slack DM notifications."""
 
-from codex_slack_notifier.notifier import main
+from coding_agent_notifier.notifier import slack_main
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(slack_main())

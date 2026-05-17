@@ -40,7 +40,7 @@ This is a simple setup, not secure secret storage. A secure setup would use an O
 
 ## Script usage
 The notifier lives at `scripts/notifier/slack_notify.py` and accepts JSON payloads on stdin or via flags.
-```
+```bash
 # Send a quick manual notification
 echo '{"status":"success","title":"Agent run","summary":"Finished"}' \
   | python scripts/notifier/slack_notify.py --user-id U12345678
@@ -61,7 +61,7 @@ Register the wrapper so your coding agent calls it after tasks finish. Example u
         "hooks": [
           {
             "type": "command",
-            "command": "/abs/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"
+            "command": "/path/to/coding-agent-notifier/scripts/notifier/agent_notify_wrapper.sh"
           }
         ]
       }
@@ -72,16 +72,16 @@ Register the wrapper so your coding agent calls it after tasks finish. Example u
 Save that as `~/.codex/hooks.json`. If Codex says the hook needs review, open `/hooks`, review the command, and enable/trust it.
 
 The hook can pipe JSON to stdin, pass a payload file path, or pass inline JSON. The wrapper normalizes those forms before forwarding to `slack_notify.py`; the notifier formats a concise DM (title, status, duration, summary, link when present).
-A concrete example is in `scripts/notifier/codex_notify_example.sh`.
+A concrete example is in `scripts/notifier/agent_notify_example.sh`.
 
 ### Optional debugging
 - If your agent supplies a payload file instead of stdin, use the wrapper:
   ```bash
-  /path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh /path/to/payload.json
+  /path/to/coding-agent-notifier/scripts/notifier/agent_notify_wrapper.sh /path/to/payload.json
   ```
 - To capture the selected payload for inspection, set:
-  ```
-  export DEBUG_CODEX_PAYLOAD=/path/to/your/codex_payload.json
+  ```bash
+  export DEBUG_AGENT_PAYLOAD=/path/to/your/agent_payload.json
   ```
   Unset this variable to stop logging.
 
@@ -89,7 +89,7 @@ A concrete example is in `scripts/notifier/codex_notify_example.sh`.
 
 ## Installing & testing
 ```
-conda activate codex_slack_notifier
+conda activate coding_agent_notifier
 pip install -e .[dev]
 pytest
 ```

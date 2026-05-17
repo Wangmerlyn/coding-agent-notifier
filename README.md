@@ -1,7 +1,7 @@
-# Vibe Coding Slack Notifier
+# Coding Agent Notifier
 
-[![CodeRabbit Reviews](https://img.shields.io/coderabbit/prs/github/Wangmerlyn/vibe-coding-slack-notifier?utm_source=oss&utm_medium=github&utm_campaign=Wangmerlyn%2Fvibe-coding-slack-notifier&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)](https://coderabbit.ai)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Wangmerlyn/vibe-coding-slack-notifier)
+[![CodeRabbit Reviews](https://img.shields.io/coderabbit/prs/github/Wangmerlyn/coding-agent-notifier?utm_source=oss&utm_medium=github&utm_campaign=Wangmerlyn%2Fcoding-agent-notifier&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)](https://coderabbit.ai)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Wangmerlyn/coding-agent-notifier)
 
 Send coding-agent task completion alerts to Slack DMs or Feishu/Lark chats.
 Slack uses the Slack Web API. Feishu/Lark uses custom bot incoming webhooks.
@@ -13,17 +13,21 @@ For integrations with coding-agent hooks (Codex CLI, Claude Code, Gemini CLI, Op
 Sample hook config snippets live under `docs/examples/`; the wrapper example is still available for tools without a hook event.
 For OpenCode marketplace/npm-style plugin setup, see `docs/opencode_plugin.md`.
 
-## Why This Slack Notifier
+## Rename Announcement (2026-05-17)
+This project has been renamed from Vibe Coding Slack Notifier to Coding Agent Notifier. Old names including `vibe-coding-slack-notifier`, `codex-slack-notifier`, `codex_slack_notifier`, and `opencode-vibe-coding-slack-notifier` remain compatibility aliases for existing setups: old repo links redirect, and old Python import, wrapper, debug, and env names continue to work. New installs should use `coding-agent-notifier`, the `coding-agent-notifier` Python distribution, the `coding_agent_notifier` import, and `opencode-coding-agent-notifier`.
+
+## Why This Notifier
 - Most coding-agent CLIs now expose hooks or plugin events, but local editor notifications still vary by tool and environment.
 - CLI-local tricks (terminal bells, desktop notifications) often fail over Remote-SSH because the sound/notification doesn’t propagate, leaving remote users uninformed.
 - This project gives those hooks a remote-safe notification target: Slack DMs or Feishu/Lark chats that work independently of where the agent runs.
 
 ## Slack quick start
 1. **Clone & env**
-   - `git clone git@github.com:Wangmerlyn/vibe-coding-slack-notifier.git`
-   - `cd vibe-coding-slack-notifier`
-   - `conda activate codex_slack_notifier` (or create it)
+   - `git clone git@github.com:Wangmerlyn/coding-agent-notifier.git`
+   - `cd coding-agent-notifier`
+   - `conda activate coding_agent_notifier` (or create it)
    - `pip install -e '.[dev]'`
+   - Python distribution/import names: `coding-agent-notifier` / `coding_agent_notifier`.
    - Optional: `pre-commit install`
 
 2. **Create a Slack app**
@@ -75,7 +79,7 @@ For OpenCode marketplace/npm-style plugin setup, see `docs/opencode_plugin.md`.
            "hooks": [
              {
                "type": "command",
-               "command": "/abs/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"
+               "command": "/path/to/coding-agent-notifier/scripts/notifier/agent_notify_wrapper.sh"
              }
            ]
          }
@@ -95,13 +99,13 @@ For OpenCode marketplace/npm-style plugin setup, see `docs/opencode_plugin.md`.
 If you use OpenCode, this repo now exposes an installable plugin package:
 
 ```bash
-npm install -g opencode-vibe-coding-slack-notifier
+npm install -g opencode-coding-agent-notifier
 ```
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-vibe-coding-slack-notifier"]
+  "plugin": ["opencode-coding-agent-notifier"]
 }
 ```
 
@@ -109,9 +113,13 @@ Recommended credentials setup (no shell export needed):
 
 ```bash
 mkdir -p ~/.config/opencode
-cat > ~/.config/opencode/slack-notifier.env <<'EOF'
+cat > ~/.config/opencode/agent-notifier.env <<'EOF'
 SLACK_BOT_TOKEN=xoxb-your-token-here
 SLACK_USER_ID=U12345678
+# Optional Feishu/Lark custom bot target:
+# LARK_WEBHOOK_URL=https://open.larksuite.com/open-apis/bot/v2/hook/your-token-here
+# or:
+# FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
 EOF
 ```
 
@@ -137,8 +145,8 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
    Codex hook env-file option:
    ```bash
    mkdir -p ~/.codex
-   install -m 600 /dev/null ~/.codex/vibe-coding-slack-notifier.env
-   cat > ~/.codex/vibe-coding-slack-notifier.env <<'EOF'
+   install -m 600 /dev/null ~/.codex/coding-agent-notifier.env
+   cat > ~/.codex/coding-agent-notifier.env <<'EOF'
    FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your-token-here
    EOF
    ```
@@ -159,7 +167,7 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
            "hooks": [
              {
                "type": "command",
-               "command": "/path/to/python /abs/path/to/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py --env-file /home/you/.codex/vibe-coding-slack-notifier.env --webhook-url-env FEISHU_WEBHOOK_URL"
+               "command": "/path/to/python /path/to/coding-agent-notifier/scripts/notifier/lark_notify.py --env-file /home/you/.codex/coding-agent-notifier.env --webhook-url-env FEISHU_WEBHOOK_URL"
              }
            ]
          }
@@ -167,7 +175,7 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
      }
    }
    ```
-   Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package, and replace `/home/you/.codex/vibe-coding-slack-notifier.env` with your user-level env file. You can also keep `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` in `~/.codex/config.toml` under `[shell_environment_policy.set]`, but `--env-file` makes the hook independent of whether the current Codex process has already loaded that config. Approve the hook from `/hooks` if Codex asks for review.
+   Replace `/path/to/python` with the Python 3.12+ interpreter where you installed this package, and replace `/home/you/.codex/coding-agent-notifier.env` with your user-level env file. You can also keep `LARK_WEBHOOK_URL` or `FEISHU_WEBHOOK_URL` in `~/.codex/config.toml` under `[shell_environment_policy.set]`, but `--env-file` makes the hook independent of whether the current Codex process has already loaded that config. Approve the hook from `/hooks` if Codex asks for review.
    Feishu/Lark custom bots send to the chat where the bot is installed, not to a specific user DM.
 
 ## Payload expectations
@@ -176,15 +184,23 @@ The plugin auto-loads this file. See `docs/opencode_plugin.md` for full setup an
 
 ## More details
 - `docs/notifier_slack.md` contains expanded setup notes and troubleshooting.
-- Example Codex wiring: `docs/examples/codex/hooks.json`, `docs/examples/codex/hooks_lark.json`, and `scripts/notifier/codex_notify_example.sh`.
+- Example Codex wiring: `docs/examples/codex/hooks.json`, `docs/examples/codex/hooks_lark.json`, and `scripts/notifier/agent_notify_example.sh`.
 
 ### Debugging agent hooks (optional)
 - Use the wrapper that can read payloads from a file argument, inline JSON, or stdin:
   ```bash
-  /path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh
+  /path/to/coding-agent-notifier/scripts/notifier/agent_notify_wrapper.sh
   ```
 - To capture the final payload for debugging, set an env var before running Codex:
-  ```
-  export DEBUG_CODEX_PAYLOAD=/path/to/your/codex_payload.json
+  ```bash
+  export DEBUG_AGENT_PAYLOAD=/path/to/your/agent_payload.json
   ```
   The wrapper will write only the most relevant JSON payload to that path; unset the variable to stop logging.
+
+## Migration and compatibility
+- Old repo/path references such as `Wangmerlyn/vibe-coding-slack-notifier`, `git@github.com:Wangmerlyn/vibe-coding-slack-notifier.git`, and `/path/to/vibe-coding-slack-notifier` map to `Wangmerlyn/coding-agent-notifier`, `git@github.com:Wangmerlyn/coding-agent-notifier.git`, and `/path/to/coding-agent-notifier`.
+- Use the Python distribution/import names `coding-agent-notifier` and `coding_agent_notifier`. The old `codex_slack_notifier` import remains available only as a compatibility import for existing code.
+- New hooks should call `scripts/notifier/agent_notify_wrapper.sh`. `scripts/notifier/codex_notify_wrapper.sh` remains as a compatibility wrapper for old hooks.
+- Prefer `DEBUG_AGENT_PAYLOAD`; `DEBUG_CODEX_PAYLOAD` remains a deprecated compatibility alias.
+- Prefer env files `~/.codex/coding-agent-notifier.env` and `~/.config/opencode/agent-notifier.env`. Older `~/.codex/vibe-coding-slack-notifier.env` and `~/.config/opencode/slack-notifier.env` paths are compatibility aliases.
+- OpenCode docs should use `opencode-coding-agent-notifier` and `OpenCodeAgentNotifierPlugin`. `opencode-vibe-coding-slack-notifier` and `OpenCodeSlackNotifierPlugin` are old compatibility names only.

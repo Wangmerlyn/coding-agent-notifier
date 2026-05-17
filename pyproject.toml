@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "codex-slack-notifier"
+name = "coding-agent-notifier"
 version = "0.1.0"
-description = "Codex Slack notifier for coding-agent hooks"
+description = "Coding-agent completion notifier for Slack and Feishu/Lark"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -21,8 +21,11 @@ dev = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["codex_slack_notifier"]
+packages = ["coding_agent_notifier", "codex_slack_notifier"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.pytest.ini_options]
+norecursedirs = ["docs"]

@@ -10,7 +10,7 @@ if [ -f "$SCRIPT_DIR/../../.env" ]; then
 fi
 
 # Replace the repo path below and set LARK_WEBHOOK_URL or FEISHU_WEBHOOK_URL.
-python /home/you/vibe-coding-slack-notifier/scripts/notifier/lark_notify.py <<'JSON'
+python /path/to/coding-agent-notifier/scripts/notifier/lark_notify.py <<'JSON'
 {
   "status": "success",
   "title": "Sample agent run",

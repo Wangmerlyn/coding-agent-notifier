@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/path/to/vibe-coding-slack-notifier/scripts/notifier/codex_notify_wrapper.sh"
+            "command": "/path/to/coding-agent-notifier/scripts/notifier/agent_notify_wrapper.sh"
           }
         ]
       }

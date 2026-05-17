@@ -1,18 +1,18 @@
 # Repository Guidelines
 
 ## Project Purpose & Layout
-- Goal: A convenient entry point for a coding agent to send the user a message about task completion via Slack.
+- Goal: A convenient entry point for a coding agent to send the user a message about task completion via Slack or Feishu/Lark.
 
 ## Repository Structure (Modify this part when you have learned enough about this repository)
-- `scripts/notifier/`: Slack notifier CLI and example Codex notify script.
-- `src/codex_slack_notifier/`: Python package with notifier logic.
+- `scripts/notifier/`: notifier CLIs, agent hook wrapper, and example scripts.
+- `src/coding_agent_notifier/`: Python package with notifier logic.
 - `tests/notifier/`: Pytest suite covering notifier behavior.
 - `docs/`: Usage and setup documentation.
 - `pyproject.toml`: Project metadata and dependencies.
 
 ## Environment & Tooling
 - Python: 3.12+.
-- Dev env: `conda activate codex_slack_notifier`; install deps via `pip install -e .[dev]`.
+- Dev env: `conda activate coding_agent_notifier`; install deps via `pip install -e .[dev]`.
 - Hooks: run `pre-commit install` in the same env.
 - Lint/format: `ruff check .` (CI also runs ruff).
 

@@ -1,6 +1,6 @@
-"""Compatibility imports for the former codex_slack_notifier package."""
+"""Coding-agent notifier package."""
 
-from coding_agent_notifier import (  # noqa: F401
+from .notifier import (  # noqa: F401
     LarkNotifier,
     NotificationError,
     SlackNotificationError,
